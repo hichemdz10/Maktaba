@@ -1,60 +1,228 @@
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Tajawal',Arial,sans-serif;background:#0f1923;min-height:100vh;direction:rtl;font-size:16px}
-button{font-family:'Tajawal',Arial,sans-serif;cursor:pointer}
-input,select,textarea{font-family:'Tajawal',Arial,sans-serif;font-size:16px}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#1a2535}::-webkit-scrollbar-thumb{background:#0277bd;border-radius:3px}
-.app{max-width:1200px;margin:0 auto;padding:10px}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+body {
+    font-family: 'Tajawal', Arial, sans-serif;
+    background: #0f1923;
+    min-height: 100vh;
+    direction: rtl;
+    font-size: 16px
+}
+
+button {
+    font-family: 'Tajawal', Arial, sans-serif;
+    cursor: pointer
+}
+
+input,
+select,
+textarea {
+    font-family: 'Tajawal', Arial, sans-serif;
+    font-size: 16px
+}
+
+::-webkit-scrollbar {
+    width: 5px
+}
+
+::-webkit-scrollbar-track {
+    background: #1a2535
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0277bd;
+    border-radius: 3px
+}
+
+.app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px
+}
 
 /* HEADER */
-.header{background:linear-gradient(135deg,#0d1b2a,#1a3a5c,#0277bd);border-radius:20px;padding:16px 20px;margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 8px 30px rgba(0,0,0,0.4);border-bottom:2px solid rgba(255,255,255,0.1)}
-.logo-area{flex:1;display:flex;align-items:center;gap:15px}
-.logo-icon{width:60px;height:60px;background:rgba(255,255,255,0.1);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:inset 0 0 10px rgba(255,255,255,0.1)}
-.shop-info h1{font-size:24px;color:#fff;font-weight:900;letter-spacing:0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.3)}
-.shop-info p{font-size:13px;color:#81d4fa;font-weight:500;opacity:0.9}
-.header-right{display:flex;align-items:center;gap:15px}
-.clock-box{text-align:left;background:rgba(0,0,0,0.2);padding:8px 15px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);min-width:110px}
-.clock-box div:first-child{font-size:18px;font-weight:700;color:#fff}
-.clock-box div:last-child{font-size:11px;color:#81d4fa;margin-top:2px}
+.header {
+    background: linear-gradient(135deg, #0d1b2a, #1a3a5c, #0277bd);
+    border-radius: 20px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    box-shadow: 0 8px 32px rgba(2, 119, 189, .4);
+    border: 1px solid rgba(255, 255, 255, .08)
+}
 
-/* TABS */
-.nav-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:15px}
-.nav-btn{background:#1a2535;border:1px solid rgba(255,255,255,0.05);padding:12px 5px;border-radius:12px;color:#94a3b8;display:flex;flex-direction:column;align-items:center;gap:6px;transition:0.3s;font-size:13px;font-weight:600}
-.nav-btn.active{background:linear-gradient(135deg,#0277bd,#01579b);color:#fff;box-shadow:0 4px 15px rgba(2,119,189,0.3);border:none;transform:translateY(-2px)}
-.nav-btn i{font-size:20px}
+/* TABS - مربعة بتأثير جميل */
+.tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 10px 10px 0;
+    background: #0d1b2a;
+    border-radius: 16px 16px 0 0
+}
 
-/* CARDS & CONTENT */
-.card{background:#16212e;border-radius:18px;padding:18px;box-shadow:0 4px 20px rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.03);margin-bottom:15px}
-.section-title{color:#fff;font-size:18px;margin-bottom:15px;display:flex;align-items:center;gap:10px}
-.section-title::before{content:'';width:4px;height:18px;background:#0277bd;border-radius:2px}
+.tab-btn {
+    padding: 14px 12px;
+    border: none;
+    border-radius: 14px 14px 0 0;
+    font-weight: 800;
+    font-size: 15px;
+    position: relative;
+    transition: all .25s;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+    letter-spacing: .3px
+}
 
-/* FORMS */
-.form-group{margin-bottom:15px}
-.label{display:block;color:#94a3b8;margin-bottom:6px;font-size:13px}
-.input{width:100%;background:#0f1923;border:1px solid #2d3748;border-radius:10px;padding:10px 12px;color:#fff;outline:none;transition:0.3s}
-.input:focus{border-color:#0277bd;box-shadow:0 0 0 3px rgba(2,119,189,0.1)}
+.tab-content {
+    background: #f0f4ff;
+    border-radius: 0 16px 16px 16px;
+    padding: 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .15)
+}
 
-/* TABLES */
-.table-container{overflow-x:auto}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th{background:#1e293b;color:#94a3b8;text-align:right;padding:12px;font-size:13px;font-weight:600;border-bottom:2px solid #2d3748}
-td{padding:12px;color:#cbd5e1;border-bottom:1px solid #1e293b;font-size:14px}
-tr:hover td{background:rgba(255,255,255,0.02)}
+/* GRIDS */
+.grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px
+}
 
-/* UTILS */
-.btn-primary{background:#0277bd;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;width:100%;transition:0.3s}
-.btn-primary:active{transform:scale(0.98)}
-.btn-success{background:#2e7d32;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer}
-.badge{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700}
-.badge-stock{background:rgba(2,119,189,0.1);color:#81d4fa}
+.grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px
+}
 
-.flex-between{display:flex;justify-content:space-between;align-items:center}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+/* INPUTS - إصلاح الكيبورد */
+.inp {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    width: 100%;
+    font-size: 16px;
+    font-family: 'Tajawal', Arial;
+    background: #fff;
+    color: #333;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none;
+    appearance: none
+}
 
-/* PRINT PREVIEW FIXED */
-#printArea{display:none}
+.inp:focus {
+    outline: none;
+    border-color: #0277bd;
+    box-shadow: 0 0 0 3px rgba(2, 119, 189, .12)
+}
 
-@media(max-width:600px){
-  .header{flex-direction:column;text-align:center;gap:15px}
-  .logo-area{flex-direction:column}
-  .grid-2{grid-template-columns:1fr}
+.btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-weight: 800;
+    font-size: 15px;
+    color: #fff;
+    font-family: 'Tajawal', Arial;
+    cursor: pointer;
+    transition: all .18s
+}
+
+.btn:active {
+    transform: scale(.97)
+}
+
+/* SECTION BOX */
+.section-box {
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+th {
+    padding: 11px 7px;
+    text-align: center;
+    font-size: 14px
+}
+
+td {
+    padding: 9px 5px;
+    text-align: center;
+    font-size: 14px;
+    border: 1px solid #eee
+}
+
+/* TOAST */
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 26px;
+    border-radius: 16px;
+    font-weight: 800;
+    z-index: 9999;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+    font-size: 16px;
+    color: #fff;
+    display: none
+}
+
+/* CART MOBILE */
+@media (max-width:700px) {
+    .home-grid {
+        display: block !important
+    }
+
+    .cart-sidebar {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 88vh;
+        overflow-y: auto;
+        border-radius: 24px 24px 0 0 !important;
+        z-index: 1000;
+        transform: translateY(100%);
+        transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, .3)
+    }
+
+    .cart-sidebar.open {
+        transform: translateY(0) !important
+    }
+
+    .cart-fab {
+        display: flex !important
+    }
+
+    .cart-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .55);
+        z-index: 999;
+        display: none
+    }
+
+    .cart-overlay.open {
+        display: block !important
+    }
+}
+
+@media (min-width:701px) {
+    .cart-fab {
+        display: none !important
+    }
 }
