@@ -1482,7 +1482,7 @@ function renderHeader() {
         '</div>' + renderTabs();
 }
 
-// ===== TABS - مربعة بألوان فاتحة =====
+// ===== TABS =====
 function renderTabs() {
     var tabKeys = ["home", "stock", "print", "flixy", "clients", "expenses", "report"];
     var low = lowItems().length;
@@ -1745,7 +1745,6 @@ function renderHome() {
 
     var cartCount = S.cart.length;
     return '<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>' +
-        '<button class="cart-fab" onclick="openCart()" style="display:none;position:fixed;bottom:22px;left:14px;z-index:998;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:50px;padding:14px 22px;font-size:16px;font-weight:800;font-family:Tajawal,Arial;box-shadow:0 6px 20px rgba(27,94,32,.5);align-items:center;gap:8px">🧾 الفاتورة' + (cartCount > 0 ? '<span style="background:#fff;color:#1b5e20;border-radius:50%;min-width:23px;height:23px;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">' + cartCount + '</span>' : '') + '</button>' +
         '<div class="home-grid" style="display:grid;grid-template-columns:1fr 360px;gap:14px">' +
         '<div>' + rightPanel + '</div>' +
         '<div class="cart-sidebar" id="cartPanel" style="background:#f5f7ff;border-radius:16px;padding:13px;border:2px solid #dde4ff;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,.09)">' +
@@ -1771,6 +1770,36 @@ function bindHomeEvents() {
 }
 
 // ===== STOCK =====
+function addToCartFromStock(id) {
+    var item = S.stock.find(function(s) { return s.id === id; });
+    if (!item || item.q <= 0) {
+        toast("نفذ المخزون ❌", "e");
+        return;
+    }
+    item.q--;
+    var ex = S.cart.find(function(c) { return c.id === id; });
+    if (ex) {
+        ex.q++;
+        ex.sum = (ex.customP !== undefined ? ex.customP : ex.p) * ex.q;
+        ex.prof = (ex.sum / ex.q - ex.c) * ex.q;
+    } else {
+        S.cart.push({
+            id: item.id,
+            n: item.n,
+            p: item.p,
+            c: item.c,
+            q: 1,
+            sum: item.p,
+            prof: item.p - item.c,
+            cat: item.cat || "قرطاسية"
+        });
+    }
+    save();
+    beep(true);
+    toast("🛒 أضيف للسلة: " + item.n);
+    if (S.tab === 'home') renderHomeOnly();
+}
+
 function renderStock() {
     var f = S.form;
     var totalShop = shopVal();
@@ -1883,6 +1912,7 @@ function renderStock() {
             '<th style="font-size:13px;color:#666;padding:11px 7px;border-bottom:2px solid #eef1ff;min-width:72px">🛒 شراء</th>' +
             '<th style="font-size:13px;color:#2e7d32;padding:11px 7px;border-bottom:2px solid #eef1ff;min-width:65px">📈 ربح</th>' +
             (showBC ? '<th style="font-size:13px;color:#888;padding:11px 7px;border-bottom:2px solid #eef1ff">🔖</th>' : '') +
+            '<th style="font-size:13px;padding:11px 7px;border-bottom:2px solid #eef1ff">إضافة</th>' +
             '<th style="font-size:13px;padding:11px 7px;border-bottom:2px solid #eef1ff">حذف</th>' +
             '</tr>';
         var tbody = items.map(function(s, idx) {
@@ -1901,6 +1931,7 @@ function renderStock() {
                 '<td style="padding:8px 6px;border-bottom:1px solid #f0f0f0;text-align:center"><input type="number" value="' + s.c + '" onchange="var it=S.stock.find(function(x){return x.id===' + s.id + '});if(it&&it.p>+this.value){it.c=+this.value;save();}else{this.value=it?it.c:this.value;}" style="width:62px;padding:5px 3px;border-radius:8px;border:2px solid #ddd;text-align:center;font-size:14px;font-family:Tajawal,Arial;color:#555;background:#fafafa"></td>' +
                 '<td style="padding:8px 6px;border-bottom:1px solid #f0f0f0;text-align:center"><span style="background:' + (pv > 0 ? '#e8f5e9' : '#ffebee') + ';color:' + (pv > 0 ? '#2e7d32' : '#f44336') + ';border-radius:8px;padding:4px 9px;font-size:13px;font-weight:700">' + pv + ' دج</span></td>' +
                 (showBC ? '<td style="padding:8px 6px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#888;font-family:monospace;text-align:center">' + (s.barcode || '—') + '</td>' : '') +
+                '<td style="padding:8px 6px;border-bottom:1px solid #f0f0f0;text-align:center"><button onclick="addToCartFromStock(' + s.id + ')" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:9px;padding:6px 11px;cursor:pointer;font-size:14px" title="إضافة للسلة">🛒</button></td>' +
                 '<td style="padding:8px 6px;border-bottom:1px solid #f0f0f0;text-align:center"><button onclick="if(confirm(\'حذف ' + esc(s.n) + '؟\'))delStock(' + s.id + ')" style="background:#fff0f0;color:#e53935;border:1.5px solid #ffcdd2;border-radius:9px;padding:6px 11px;cursor:pointer;font-size:14px">🗑</button></td>' +
                 '</tr>';
         }).join('');
@@ -2022,35 +2053,45 @@ function renderFlixy() {
         '<div style="text-align:center;background:rgba(105,240,174,.15);border-radius:12px;padding:9px 15px"><div style="color:rgba(255,255,255,.75);font-size:13px;font-weight:600">ربح اليوم</div><div style="color:#69f0ae;font-weight:900;font-size:22px">' + fmt(tFlixyProfit()) + ' دج</div></div>' +
         '<div style="text-align:center;background:rgba(105,240,174,.15);border-radius:12px;padding:9px 15px"><div style="color:rgba(255,255,255,.75);font-size:13px;font-weight:600">ربح الشهر</div><div style="color:#69f0ae;font-weight:900;font-size:22px">' + fmt(mFlixyProfit()) + ' دج</div></div>' +
         '</div>';
-    var phones = [{
-        op: "Djezzy",
-        col: "#e53935",
-        idx: 0
-    }, {
-        op: "Mobilis",
-        col: "#1565c0",
-        idx: 1
-    }, {
-        op: "Ooredoo",
-        col: "#e65100",
-        idx: 2
-    }];
-    var phoneCards = phones.map(function(x) {
-        return '<div style="border:2px solid ' + x.col + '44;border-radius:14px;padding:14px;background:linear-gradient(135deg,' + x.col + '0a,#fff)"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="background:linear-gradient(135deg,' + x.col + ',' + x.col + 'cc);border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:800;box-shadow:0 3px 10px ' + x.col + '44">' + x.op[0] + '</div><span style="font-weight:800;font-size:16px;color:' + x.col + '">' + x.op + '</span></div><input id="fi' + x.idx + '" type="number" placeholder="المبلغ (دج)" class="inp" style="margin-bottom:10px;border-color:' + x.col + '55"><button id="fib' + x.idx + '" style="width:100%;background:linear-gradient(135deg,' + x.col + ',' + x.col + 'cc);color:#fff;border:none;border-radius:10px;padding:11px;font-size:15px;font-weight:800;cursor:pointer;font-family:Tajawal,Arial;box-shadow:0 3px 10px ' + x.col + '44">✅ تسجيل</button></div>';
+
+    var phoneCards = [
+        {
+            op: "Djezzy",
+            img: "img/img/djezzy.png"
+        },
+        {
+            op: "Mobilis",
+            img: "img/img/mobilis.png"
+        },
+        {
+            op: "Ooredoo",
+            img: "img/img/oreedoo.jpeg"
+        }
+    ].map(function(p) {
+        return '<div style="border:2px solid rgba(0,0,0,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2);background:url(' + p.img + ') center/cover no-repeat;position:relative;min-height:180px;display:flex;flex-direction:column;justify-content:flex-end">' +
+            '<div style="background:rgba(0,0,0,.6);padding:14px 12px;color:#fff;text-align:center">' +
+            '<div style="font-weight:800;font-size:16px;margin-bottom:8px">' + p.op + '</div>' +
+            '<input id="fi_' + p.op + '" type="number" placeholder="المبلغ (دج)" class="inp" style="margin-bottom:10px;background:rgba(255,255,255,.9);color:#000">' +
+            '<button id="fib_' + p.op + '" style="width:100%;background:linear-gradient(135deg,#ff9800,#f57c00);color:#fff;border:none;border-radius:10px;padding:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:Tajawal,Arial;box-shadow:0 2px 6px rgba(0,0,0,.3)">✅ تسجيل</button>' +
+            '</div>' +
+            '</div>';
     }).join('');
-    var idooms = [{
-        op: "Idoom 500",
-        price: 500
-    }, {
-        op: "Idoom 1000",
-        price: 1000
-    }, {
-        op: "Idoom 2000",
-        price: 2000
-    }];
-    var idoomCards = idooms.map(function(x) {
-        return '<button id="idb' + x.price + '" style="border:none;border-radius:16px;padding:20px 9px;cursor:pointer;font-family:Tajawal,Arial;background:linear-gradient(135deg,#004d40,#00695c,#00897b);display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 5px 18px rgba(0,105,92,.35);width:100%;transition:all .2s"><span style="font-size:30px">📡</span><span style="color:#fff;font-weight:800;font-size:15px">' + x.op + '</span><span style="background:rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:700">' + x.price + ' دج</span><span style="background:rgba(105,240,174,.2);color:#69f0ae;border-radius:16px;padding:2px 11px;font-size:13px;font-weight:700">ربح: 50 دج</span></button>';
+
+    var idoomCards = [
+        { op: "Idoom 500", price: 500, img: "img/img/idoom500.jpeg" },
+        { op: "Idoom 1000", price: 1000, img: "img/img/idoom1000.jpeg" },
+        { op: "Idoom 2000", price: 2000, img: "img/img/idoom2000.png" }
+    ].map(function(x) {
+        return '<div style="border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2);background:url(' + x.img + ') center/cover no-repeat;min-height:180px;position:relative;display:flex;align-items:flex-end">' +
+            '<div style="background:rgba(0,0,0,.6);padding:14px;width:100%;text-align:center;color:#fff">' +
+            '<div style="font-weight:800;font-size:16px;margin-bottom:6px">' + x.op + '</div>' +
+            '<div style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;display:inline-block;font-size:14px;margin-bottom:8px">' + x.price + ' دج</div>' +
+            '<div style="font-size:13px;background:#69f0ae33;display:inline-block;padding:2px 10px;border-radius:16px">ربح: 50 دج</div>' +
+            '<button id="idb' + x.price + '" style="display:block;width:100%;margin-top:12px;background:linear-gradient(135deg,#ff9800,#f57c00);color:#fff;border:none;border-radius:10px;padding:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:Tajawal,Arial">✅ تسجيل</button>' +
+            '</div>' +
+            '</div>';
     }).join('');
+
     var list = S.flixy.length === 0 ? '<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:42px;margin-bottom:10px">📱</div><div style="font-size:16px">لا توجد عمليات بعد</div></div>' :
         S.flixy.slice().reverse().map(function(f) {
             var col = FLIXY_COLORS[f.op] || "#555";
@@ -2060,26 +2101,19 @@ function renderFlixy() {
                 '<div style="display:flex;align-items:center;gap:9px"><span style="font-weight:900;color:' + col + ';font-size:18px">' + fmt(f.amount) + ' دج</span><span style="background:#e8f5e9;color:#2e7d32;border-radius:9px;padding:3px 10px;font-size:14px;font-weight:700">+' + f.profit + ' دج</span><button id="delf' + f.id + '" style="background:#fff0f0;color:#f44336;border:2px solid #ffcdd2;border-radius:9px;padding:5px 10px;cursor:pointer;font-size:14px">🗑</button></div>' +
                 '</div>';
         }).join('');
+
     return '<h3 style="margin:0 0 16px;color:#1a237e;font-size:22px;font-weight:900">📱 Flixy</h3>' + statBar +
-        '<div style="background:#fff;border-radius:14px;padding:15px;margin-bottom:15px;border:2px solid #e8e8e8;box-shadow:0 3px 13px rgba(0,0,0,.07)"><h4 style="margin:0 0 14px;font-size:16px;color:#222;font-weight:900">📱 تعبئة رصيد الهاتف</h4><div class="grid3">' + phoneCards + '</div></div>' +
-        '<div style="background:linear-gradient(135deg,#e0f2f1,#f0faf9);border-radius:14px;padding:15px;margin-bottom:15px;border:2px solid #b2dfdb"><h4 style="margin:0 0 14px;font-size:16px;color:#00695c;font-weight:900">📡 Idoom Fibre</h4><div class="grid3">' + idoomCards + '</div></div>' +
+        '<div style="background:#fff;border-radius:14px;padding:15px;margin-bottom:15px;border:2px solid #e8e8e8;box-shadow:0 3px 13px rgba(0,0,0,.07)"><h4 style="margin:0 0 14px;font-size:16px;color:#222;font-weight:900">📱 تعبئة رصيد الهاتف</h4><div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">' + phoneCards + '</div></div>' +
+        '<div style="background:linear-gradient(135deg,#e0f2f1,#f0faf9);border-radius:14px;padding:15px;margin-bottom:15px;border:2px solid #b2dfdb"><h4 style="margin:0 0 14px;font-size:16px;color:#00695c;font-weight:900">📡 Idoom Fibre</h4><div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">' + idoomCards + '</div></div>' +
         '<h4 style="color:#1a237e;margin:0 0 12px;font-size:16px;font-weight:900">📋 سجل العمليات</h4>' + list;
 }
 
 function bindFlixyEvents() {
     if (S.tab !== "flixy") return;
-    [{
-        op: "Djezzy",
-        idx: 0
-    }, {
-        op: "Mobilis",
-        idx: 1
-    }, {
-        op: "Ooredoo",
-        idx: 2
-    }].forEach(function(x) {
-        var btn = document.getElementById("fib" + x.idx);
-        var inp = document.getElementById("fi" + x.idx);
+    var ops = ["Djezzy", "Mobilis", "Ooredoo"];
+    ops.forEach(function(op) {
+        var btn = document.getElementById("fib_" + op);
+        var inp = document.getElementById("fi_" + op);
         if (btn && inp) {
             btn.onclick = function() {
                 var v = parseFloat(inp.value) || 0;
@@ -2087,25 +2121,17 @@ function bindFlixyEvents() {
                     toast("أدخل المبلغ", "e");
                     return;
                 }
-                addFlixy(x.op, v);
+                addFlixy(op, v);
                 inp.value = "";
             };
         }
     });
-    [{
-        op: "Idoom 500",
-        price: 500
-    }, {
-        op: "Idoom 1000",
-        price: 1000
-    }, {
-        op: "Idoom 2000",
-        price: 2000
-    }].forEach(function(x) {
-        var btn = document.getElementById("idb" + x.price);
+    [500, 1000, 2000].forEach(function(price) {
+        var btn = document.getElementById("idb" + price);
         if (btn) {
             btn.onclick = function() {
-                addFlixy(x.op, x.price);
+                var op = "Idoom " + price;
+                addFlixy(op, price);
             };
         }
     });
@@ -2368,7 +2394,7 @@ function printReport() {
         '<div class="summary"><div class="box"><div class="box-label">إجمالي المبيعات</div><div class="box-val">' + fmt(rT) + ' دج</div></div><div class="box"><div class="box-label">أرباح المبيعات</div><div class="box-val">' + fmt(rP) + ' دج</div></div><div class="box"><div class="box-label">الطباعة</div><div class="box-val">' + fmt(rPR) + ' دج</div></div><div class="box"><div class="box-label">ربح Flixy</div><div class="box-val">' + fmt(rFR) + ' دج</div></div><div class="box"><div class="box-label">المصاريف</div><div class="box-val" style="color:#c62828">' + fmt(rE) + ' دج</div></div><div class="box"><div class="box-label">عدد الفواتير</div><div class="box-val">' + rs.length + '</div></div></div>' +
         '<div class="net" style="color:' + (rNet >= 0 ? '#1b5e20' : '#c62828') + ';border-color:' + (rNet >= 0 ? '#1b5e20' : '#c62828') + '">صافي الربح: ' + fmt(rNet) + ' دج</div>' +
         (rs.length > 0 ? '<table><thead>腺<th>#</th><th>الوقت</th><th>الأصناف</th><th>الإجمالي</th><th>الربح</th></thead><tbody>' + rs.slice().reverse().map(function(s, i) {
-            return '<tr><td>' + (rs.length - i) + '</td><td style="font-size:11px">' + ld(s.date) + '</td><td style="font-size:11px">' + s.items.map(function(it) {
+            return '骨<td>' + (rs.length - i) + '</td><td style="font-size:11px">' + ld(s.date) + '</td><td style="font-size:11px">' + s.items.map(function(it) {
                 return esc(it.n) + '×' + it.q;
             }).join('، ') + '</td><td style="font-weight:bold">' + s.total + ' دج</td><td style="color:#2e7d32;font-weight:bold">' + s.profit + ' دج</td></tr>';
         }).join('') + '</tbody> </table>' : '') +
