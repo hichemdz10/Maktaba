@@ -226,13 +226,5 @@ td {
         display: none !important
     }
 
-    /* تعديل صورة البانر للهواتف */
-@media (max-width: 768px) {
-  .header-banner {
-    height: auto;           /* ارتفاع تلقائي حسب الصورة */
-    max-height: 140px;      /* حد أقصى للارتفاع في الهواتف */
-    object-fit: contain;    /* تظهر الصورة كاملة بدون قص */
-    object-position: center center;
-  }
 
 }
