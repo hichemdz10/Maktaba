@@ -42,7 +42,7 @@ body.dark-mode .danger-zone { background: rgba(69,10,10,0.3); border-color: #7f1
 body.dark-mode .cat-chip { background: #334155; color: #e2e8f0; }
 body.dark-mode .sidebar { background: linear-gradient(175deg,#1e1b4b,#312e81,#4c1d95); }
 
-/* ===== SIDEBAR — Desktop ===== */
+/* ===== SIDEBAR ===== */
 .sidebar {
   width: 210px;
   flex-shrink: 0;
@@ -50,13 +50,11 @@ body.dark-mode .sidebar { background: linear-gradient(175deg,#1e1b4b,#312e81,#4c
   display: flex;
   flex-direction: column;
   padding: 16px 0 10px;
+  /* FIX: القائمة تتمرر عمودياً على الكمبيوتر */
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 4px 0 20px rgba(0,0,0,.2);
-  transition: transform .3s ease;
-  position: relative;
-  z-index: 200;
 }
 
 /* خلفية الأقسام — نفس لون القائمة بنسبة أخف ومتدرجة */
@@ -693,132 +691,7 @@ input:checked + .slider::before { transform: translateX(20px); }
   gap: 12px;
 }
 
-/* ===== زر الهامبرغر (هاتف) ===== */
-.hamburger-btn {
-  display: none;
-  width: 36px; height: 36px;
-  border-radius: 9px;
-  background: #f4f6fb;
-  border: none; cursor: pointer;
-  flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 5px;
-  padding: 6px;
-  transition: .2s;
-  flex-shrink: 0;
-}
-.hamburger-btn:hover { background: #ede9fe; }
-.hamburger-btn span {
-  display: block;
-  width: 18px; height: 2px;
-  background: #374151;
-  border-radius: 2px;
-  transition: .3s;
-}
-body.dark-mode .hamburger-btn { background: rgba(30,41,59,0.8); }
-body.dark-mode .hamburger-btn span { background: #cbd5e1; }
-
-/* ===== شريط التنقل السفلي (هاتف) ===== */
-.bottom-nav {
-  display: none;
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: #fff;
-  border-top: 1px solid #e5e7eb;
-  z-index: 500;
-  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
-  box-shadow: 0 -4px 16px rgba(0,0,0,.06);
-}
-body.dark-mode .bottom-nav {
-  background: #1e293b;
-  border-top-color: #334155;
-}
-.bottom-nav-items {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-.bn-item {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
-  padding: 4px 8px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: .2s;
-  min-width: 52px;
-  border: none; background: transparent;
-  font-family: inherit;
-}
-.bn-item .bn-icon { font-size: 20px; line-height: 1; }
-.bn-item .bn-label { font-size: 9.5px; font-weight: 700; color: #9ca3af; }
-.bn-item.active .bn-icon  { filter: drop-shadow(0 2px 4px rgba(124,58,237,.4)); }
-.bn-item.active .bn-label { color: #7c3aed; }
-.bn-item.active { background: rgba(124,58,237,.08); }
-
-/* زر "المزيد" يفتح القائمة الجانبية */
-.bn-more .bn-label { color: #9ca3af; }
-.bn-more.active .bn-label { color: #7c3aed; }
-
-/* ===== بطاقات احترافية — تحسينات عامة ===== */
-.card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.06);
-  border: 1px solid rgba(0,0,0,.04);
-  transition: box-shadow .2s;
-}
-.card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.09); }
-body.dark-mode .card {
-  background: #1e293b;
-  border-color: #334155;
-  box-shadow: 0 2px 12px rgba(0,0,0,.3);
-}
-
-/* stat-card محسّنة */
-.stat-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  border: 1px solid rgba(0,0,0,.04);
-  position: relative; overflow: hidden;
-  transition: transform .2s, box-shadow .2s;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.1);
-}
-body.dark-mode .stat-card { background: #1e293b; border-color: #334155; }
-
-/* بطاقات الطباعة والهاتف — أيقونات أكبر */
-.pt-btn { border-radius: 14px; }
-.pt-icon { font-size: 26px; }
-.pt-name { font-size: 11px; }
-.pt-price { font-size: 12px; }
-.op-btn { border-radius: 14px; }
-.oi { font-size: 30px; }
-.on { font-size: 12px; font-weight: 800; }
-.ct-btn { border-radius: 14px; }
-.ct-price { font-size: 18px; font-weight: 900; }
-
-/* exp-row و sale-row محسّنة */
-.exp-row, .sale-row {
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 7px;
-}
-.exp-icon, .sale-method-dot {
-  width: 38px; height: 38px;
-  border-radius: 11px;
-}
-
-/* cli-card */
-.cli-card { border-radius: 13px; padding: 11px; margin-bottom: 7px; }
-
-/* scan-stat */
-.scan-stat { border-radius: 12px; border: 1px solid #e5e7eb; }
-body.dark-mode .scan-stat { border-color: #334155; background: #0f172a; }
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-thumb { background: #d8b4fe; border-radius: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -838,42 +711,16 @@ canvas { max-width: 100%; display: block; }
    ============================================================ */
 @media (max-width: 768px) {
 
-  body { font-size: 13px; overflow: hidden; }
+  body { font-size: 13px; }
 
-  /* ===== SIDEBAR: مخفي خلف overlay ===== */
-  .sidebar {
-    position: fixed;
-    top: 0; right: 0;
-    height: 100vh;
-    width: 230px;
-    z-index: 999;
-    transform: translateX(100%);   /* مخفي للأيمن */
-    transition: transform .3s ease;
-    padding-top: 56px;             /* مسافة للـ topbar */
-    overflow-y: auto;
-  }
-  .sidebar.open { transform: translateX(0); }
+  /* Sidebar مخفي بالكامل على الهاتف */
+  .sidebar { display: none; }
+  .main { padding-right: 0; }
 
-  /* overlay خلف القائمة */
-  .sidebar-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(15,10,40,.55);
-    z-index: 998;
-    backdrop-filter: blur(2px);
-  }
-  .sidebar-overlay.show { display: block; }
-
-  /* ===== زر الهامبرغر ===== */
-  .hamburger-btn {
-    display: flex !important;
-  }
-
-  .main { width: 100%; }
-  .topbar { padding: 8px 12px; position: sticky; top: 0; z-index: 100; }
+  .topbar { padding: 8px 12px; }
   .topbar h1 { font-size: 14px; }
 
-  .page { padding: 10px 10px 100px; gap: 10px; }
+  .page { padding: 10px 10px 80px; gap: 10px; }
 
   /* --- DASHBOARD: بطاقتان × بطاقتان --- */
   .stats-grid {
@@ -885,16 +732,19 @@ canvas { max-width: 100%; display: block; }
     gap: 8px;
   }
 
+  /* عمودان على الهاتف */
   .two-col {
     grid-template-columns: 1fr !important;
     gap: 10px;
   }
 
-  /* --- CASHIER: السلة تحت الكاميرا --- */
+  /* --- CASHIER: السلة تحت الكاميرا مباشرة --- */
+  /* نعكس الترتيب: السلة أولاً، ثم البحث، ثم الملخص */
   #pg-cashier .two-col {
     display: flex !important;
     flex-direction: column !important;
   }
+  /* اجعل السلة تظهر أعلى على الهاتف */
   #pg-cashier .two-col > .card.cart-wrap {
     order: -1;
     max-height: none;
@@ -902,76 +752,29 @@ canvas { max-width: 100%; display: block; }
   }
   #cart-list { max-height: 180px; }
 
-  /* --- INVENTORY --- */
+  /* --- INVENTORY: جدول قابل للتمرير --- */
   .table-wrap { max-height: calc(100vh - 200px); }
   .inv-stats-row { grid-template-columns: repeat(2,1fr); }
 
   /* --- PRINT: بطاقتان جنباً إلى جنب --- */
   .print-grid { grid-template-columns: repeat(2,1fr) !important; gap: 6px; }
 
-  /* --- TELECOM --- */
+  /* --- TELECOM: بطاقتان × بطاقتان --- */
   .card-grid { grid-template-columns: repeat(2,1fr) !important; gap: 6px; }
   .op-grid   { grid-template-columns: repeat(3,1fr) !important; }
 
-  .stat-val  { font-size: 15px; }
+  /* بطاقات إحصائيات صغيرة */
+  .stat-val { font-size: 15px; }
   .stat-icon { font-size: 20px; }
 
+  /* فاتورة */
   .modal { padding: 16px; border-radius: 16px; }
   .frow  { grid-template-columns: 1fr !important; }
   .frow3 { grid-template-columns: 1fr !important; }
-
-  /* ===== شريط التنقل السفلي ===== */
-  .bottom-nav {
-    display: flex !important;
-  }
 }
 
-/* هاتف صغير */
+/* هاتف صغير جداً */
 @media (max-width: 400px) {
-  .stats-grid  { grid-template-columns: 1fr 1fr !important; }
-  .print-grid  { grid-template-columns: 1fr 1fr !important; }
-}
-
-/* ===== Desktop: إخفاء عناصر الهاتف ===== */
-@media (min-width: 769px) {
-  .hamburger-btn { display: none !important; }
-  .bottom-nav    { display: none !important; }
-  .sidebar-overlay { display: none !important; }
-
-  /* Desktop: إخفاء الكاميرا في الكاشيير */
-  #cashier-camera-section { display: none !important; }
-
-  /* Desktop: توسيع السلة */
-  .cart-wrap {
-    max-height: calc(100vh - 120px);
-  }
-  #cart-list {
-    max-height: 380px;
-  }
-  .qty-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 15px;
-  }
-  .qty-n {
-    width: 32px;
-    font-size: 15px;
-    font-weight: 900;
-  }
-  .ci-name  { font-size: 14px; }
-  .ci-unit  { font-size: 12px; }
-  .ci-price { font-size: 14px; }
-  .cart-sum { padding: 14px; }
-  .sum-row  { font-size: 13.5px; margin-bottom: 6px; }
-  .sum-total { font-size: 20px; padding-top: 10px; }
-  #cart-tot { font-size: 22px !important; }
-  #pay-section .btn-g { font-size: 15px !important; padding: 14px !important; }
-  #pay-section .pay-chip { padding: 12px; font-size: 13px; }
-  .cart-wrap .card-title { font-size: 15px; }
-  #cart-badge { font-size: 12px !important; padding: 3px 9px !important; }
-
-  /* Desktop: عرض ثابت للعمود الأيسر في الكاشيير */
-  #pg-cashier .two-col {
-    grid-template-columns: 1fr 420px;
-  }
+  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  .print-grid { grid-template-columns: 1fr 1fr !important; }
 }
