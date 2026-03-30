@@ -69,46 +69,6 @@ function openModal(id)  { $(id).classList.add('show'); }
 function closeModal(id) { $(id).classList.remove('show'); }
 function ovClose(e, el) { if (e.target === el) el.classList.remove('show'); }
 
-/* ===== SIDEBAR MOBILE TOGGLE ===== */
-function toggleSidebar() {
-  var sb  = document.querySelector('.sidebar');
-  var ov  = $('sidebar-overlay');
-  var btn = $('hamburger-btn');
-  var isOpen = sb.classList.contains('open');
-  if (isOpen) {
-    sb.classList.remove('open');
-    ov.classList.remove('show');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
-  } else {
-    sb.classList.add('open');
-    ov.classList.add('show');
-    if (btn) btn.setAttribute('aria-expanded', 'true');
-  }
-}
-
-function closeSidebar() {
-  var sb = document.querySelector('.sidebar');
-  var ov = $('sidebar-overlay');
-  sb.classList.remove('open');
-  ov.classList.remove('show');
-}
-
-/* ===== BOTTOM NAV ===== */
-function bnNav(pageId, el) {
-  /* تحديث الحالة النشطة في الشريط السفلي */
-  document.querySelectorAll('.bn-item').forEach(function (b) { b.classList.remove('active'); });
-  if (el) el.classList.add('active');
-  closeSidebar();
-  showPage(pageId);
-}
-
-/* تحديث الشريط السفلي عند تغيير الصفحة */
-function syncBottomNav(pageId) {
-  document.querySelectorAll('.bn-item[data-page]').forEach(function (b) {
-    b.classList.toggle('active', b.dataset.page === pageId);
-  });
-}
-
 /* ===== NAVIGATION ===== */
 function showPage(id) {
   document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
@@ -124,12 +84,6 @@ function showPage(id) {
   var info = PAGE_INFO[id] || { title: id, sub: '' };
   $('pg-title').textContent = info.title;
   $('pg-sub').textContent   = info.sub;
-
-  /* إغلاق القائمة الجانبية على الهاتف تلقائياً */
-  closeSidebar();
-
-  /* تحديث الشريط السفلي */
-  syncBottomNav(id);
 
   if (id !== 'cashier') stopCamera();
 
