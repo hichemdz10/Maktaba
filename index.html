@@ -14,7 +14,7 @@
     <div class="logo-icon">📚</div>
     <div class="logo-text">
       <span> مكتبة حشايشي </span>
-      </span> لوحة التحكم </span>
+      <span> لوحة التحكم </span>
     </div>
   </div>
 
@@ -45,6 +45,9 @@
 <!-- ===== MAIN ===== -->
 <div class="main">
   <div class="topbar">
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" aria-label="القائمة">
+      <span></span><span></span><span></span>
+    </button>
     <div>
       <h1 id="pg-title">لوحة التحكم</h1>
       <p id="pg-sub">المركز الرئيسي لمتابعة أداء المكتبة</p>
@@ -239,7 +242,9 @@
       </div>
       <div style="overflow-x:auto;padding:0 12px 24px">
         <table>
-          <thead><tr><th>الباركود</th><th>المنتج</th><th>القسم</th><th>البيع</th><th>الشراء</th><th>الربح</th><th>المخزون</th><th>إجراءات</th></tr></thead>
+          <thead>
+            <tr><th>الباركود</th><th>المنتج</th><th>القسم</th><th>البيع</th><th>الشراء</th><th>الربح</th><th>المخزون</th><th>إجراءات</th></tr>
+          </thead>
           <tbody id="inv-body"></tbody>
         </table>
       </div>
