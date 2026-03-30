@@ -17,6 +17,7 @@ function rechargeProfit(amt) {
     : (shopSettings.flexyProfitHigh || 20);
 }
 
+/* FIX: normalizeBC — يتعامل مع null/undefined بأمان */
 function normalizeBC(code) {
   if (code == null) return '';
   return String(code).replace(/[\s\r\n\t\u200b\u200c\u200d\ufeff]/g, '');
@@ -70,8 +71,8 @@ function ovClose(e, el) { if (e.target === el) el.classList.remove('show'); }
 
 /* ===== SIDEBAR MOBILE TOGGLE ===== */
 function toggleSidebar() {
-  var sb = document.querySelector('.sidebar');
-  var ov = $('sidebar-overlay');
+  var sb  = document.querySelector('.sidebar');
+  var ov  = $('sidebar-overlay');
   var btn = $('hamburger-btn');
   var isOpen = sb.classList.contains('open');
   if (isOpen) {
@@ -171,17 +172,3 @@ function renderSidebarSparkline() {
   var sp = $('sidebar-spark');
   if (sp) sp.innerHTML = html;
 }
-
-/* ===== إعادة رسم الشارتات عند تغيير حجم النافذة ===== */
-window.addEventListener('resize', function() {
-  // إعادة رسم شارت الداشبورد إذا كانت الصفحة نشطة
-  if ($('pg-dashboard') && $('pg-dashboard').classList.contains('active')) {
-    var weekData = getSalesForDays(7);
-    var weekKeys = Object.keys(weekData);
-    drawDashboardChart(weekKeys, weekKeys.map(function(k) { return weekData[k]; }));
-  }
-  // إعادة رسم شارت التقارير إذا كانت الصفحة نشطة
-  if ($('pg-reports') && $('pg-reports').classList.contains('active')) {
-    if (typeof genReport === 'function') genReport();
-  }
-});
