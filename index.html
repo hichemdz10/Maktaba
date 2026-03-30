@@ -126,23 +126,33 @@
     </div>
     <div class="two-col" style="align-items:start">
       <div style="display:flex;flex-direction:column;gap:20px">
-        <div class="card">
+
+        <!-- قسم الكاميرا — مخفي على الكمبيوتر، ظاهر على الهاتف -->
+        <div class="card" id="cashier-camera-section">
           <div class="card-head">
             <div><div class="card-title">📷 مسح الباركود</div><div class="card-sub" id="scan-status-text">جاهز • الليزر يعمل مباشرة</div></div>
-            <button class="btn btn-p btn-sm" id="cam-btn" onclick="toggleCamera()">الكاميرا الذكية</button>
+            <button class="btn btn-p btn-sm" id="cam-btn" onclick="toggleCamera()">الكاميرا</button>
           </div>
           <div id="scan-area" class="scan-area" onclick="toggleCamera()">
-            <div style="font-size:42px;margin-bottom:8px">📷</div>
-            <div style="font-size:14px;font-weight:800;color:#8b5cf6">انقر لتشغيل الكاميرا</div>
-            <div style="font-size:11px;color:#64748b;margin-top:6px;font-weight:600">المسح التلقائي مستمر حتى تضغط إيقاف</div>
+            <div style="font-size:36px;margin-bottom:6px">📷</div>
+            <div style="font-size:13px;font-weight:700;color:#7c3aed">انقر لتشغيل الكاميرا</div>
+            <div style="font-size:10px;color:#64748b;margin-top:4px">المسح التلقائي مستمر</div>
           </div>
           <video id="scan-video" autoplay playsinline muted></video>
           <div class="scan-stats">
             <div class="scan-stat"><div id="ss-scanned" class="scan-stat-v">0</div><div class="scan-stat-l">مسح اليوم</div></div>
             <div class="scan-stat"><div id="ss-items" class="scan-stat-v">0</div><div class="scan-stat-l">في السلة</div></div>
-            <div class="scan-stat" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2)">
-              <div id="ss-total" class="scan-stat-v" style="color:#10b981">0</div>
-              <div class="scan-stat-l">دج</div>
+            <div class="scan-stat" style="background:rgba(16,185,129,.1)"><div id="ss-total" class="scan-stat-v" style="color:#10b981">0</div><div class="scan-stat-l">دج</div></div>
+          </div>
+        </div>
+
+        <!-- حالة الليزر — ظاهر على الكمبيوتر دائماً -->
+        <div class="card" id="cashier-laser-status" style="padding:12px 16px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:10px;height:10px;border-radius:50%;background:#16a34a;box-shadow:0 0 6px #16a34a;flex-shrink:0"></div>
+            <div>
+              <div style="font-size:12px;font-weight:700" id="scan-status-text-desk">جاهز للمسح • وجّه الليزر نحو الباركود</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:2px">يعمل تلقائياً بدون أي إعداد</div>
             </div>
           </div>
         </div>
@@ -641,6 +651,30 @@
     <div class="modal-foot"><button class="btn btn-gray btn-full" style="padding:12px" onclick="closeModal('m-cloud')">إغلاق</button></div>
   </div>
 </div>
+
+<!-- overlay القائمة الجانبية -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ===== شريط التنقل السفلي (هاتف) ===== -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bn-item active" data-page="dashboard" onclick="bnNav('dashboard',this)">
+      <span class="bn-icon">🏠</span><span class="bn-label">الرئيسية</span>
+    </button>
+    <button class="bn-item" data-page="cashier" onclick="bnNav('cashier',this)">
+      <span class="bn-icon">🛒</span><span class="bn-label">الكاشيير</span>
+    </button>
+    <button class="bn-item" data-page="inventory" onclick="bnNav('inventory',this)">
+      <span class="bn-icon">📦</span><span class="bn-label">المخزون</span>
+    </button>
+    <button class="bn-item" data-page="clients" onclick="bnNav('clients',this)">
+      <span class="bn-icon">👥</span><span class="bn-label">العملاء</span>
+    </button>
+    <button class="bn-item bn-more" id="bn-more" onclick="toggleSidebar()">
+      <span class="bn-icon">☰</span><span class="bn-label">المزيد</span>
+    </button>
+  </div>
+</nav>
 
 <div class="toast" id="toast"></div>
 
