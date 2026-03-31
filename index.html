@@ -1701,13 +1701,4 @@ function init(){
   loadDB();loadSettings();applyTheme();populateCategories();
   autoSync=localStorage.getItem(AUTO_SYNC_KEY)==='1';
   initScanner();initPrint();initTelecom();
-  if($('exp-date'))$('exp-date').value=today();
-  if($('rep-from'))$('rep-from').value=today();
-  if($('rep-to'))$('rep-to').value=today();
-  renderDash();renderTodaySum();updateCloudStatus();renderHeldCarts();
-  cloudPull(false,function(ok){if(ok){renderDash();toast('تم التحديث من السحابة ☁️','info',2000);}});
-}
-init();
-</script>
-</body>
-</html>
+  if($('exp-date'))$('exp-date').value=today()
