@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شاشة الزبون — مكتبة حشايشي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   PART 1 — RESET & VARIABLES
+   ============================================= */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a1a;
+  --bg2:#0f0f2a;
+  --accent:#7c3aed;
+  --accent2:#a855f7;
+  --gold:#f59e0b;
+  --green:#10b981;
+  --red:#ef4444;
+  --white:#f8fafc;
+  --gray:#94a3b8;
+  --card-bg:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);
+  --glow:0 0 40px rgba(124,58,237,0.25);
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Cairo','Tajawal',sans-serif;background:var(--bg);color:var(--white);direction:rtl;}
+
+/* =============================================
+   PART 2 — ANIMATED BACKGROUND
+   ============================================= */
+.bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.07) 1px, transparent 1px);
+  background-size:60px 60px;
+  animation:gridMove 20s linear infinite;
+}
+@keyframes gridMove{from{background-position:0 0}to{background-position:60px 60px}}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:orbFloat 10s ease-in-out infinite alternate;}
+.bg-orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(124,58,237,0.18),transparent 70%);top:-200px;right:-200px;animation-delay:0s;}
+.bg-orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent 70%);bottom:-150px;left:-150px;animation-delay:-5s;}
+.bg-orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(245,158,11,0.1),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-3s;}
+@keyframes orbFloat{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.1)}}
+
+/* =============================================
+   PART 3 — SCREENS
+   ============================================= */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;transition:opacity .6s ease,transform .6s ease;}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(1.02);}
+
+/* =============================================
+   PART 4 — CASHIER SCREEN (POS Display)
+   ============================================= */
+#screen-cashier{background:transparent;}
+
+.cashier-header{
+  height:80px;background:rgba(15,15,40,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 40px;flex-shrink:0;
+}
+.shop-brand{display:flex;align-items:center;gap:16px;}
+.shop-logo{width:50px;height:50px;background:linear-gradient(135deg,var(--gold),#f97316);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 20px rgba(245,158,11,0.4);}
+.shop-name{font-size:20px;font-weight:900;letter-spacing:0.5px;}
+.shop-name span{font-size:11px;color:var(--gray);font-weight:400;display:block;margin-top:1px;}
+.cashier-clock{text-align:left;}
+.clock-time{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--white);letter-spacing:2px;}
+.clock-date{font-size:11px;color:var(--gray);text-align:left;margin-top:2px;}
+.live-badge{display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);padding:6px 16px;border-radius:20px;font-size:12px;color:var(--green);font-weight:700;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:livePulse 1.5s infinite;}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,0.5)}50%{opacity:.6;box-shadow:0 0 0 6px rgba(16,185,129,0)}}
+
+.cashier-body{flex:1;display:grid;grid-template-columns:1fr 420px;gap:0;overflow:hidden;}
+
+/* Items list */
+.items-panel{padding:28px 32px;display:flex;flex-direction:column;gap:20px;overflow:hidden;}
+.items-title{font-size:14px;color:var(--gray);font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:10px;}
+.items-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.items-list{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:10px;}
+.item-row{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:16px;
+  padding:16px 20px;display:flex;align-items:center;gap:16px;
+  animation:itemSlide .4s cubic-bezier(0.175,0.885,0.32,1.275);
+  position:relative;overflow:hidden;
+}
+.item-row::before{content:'';position:absolute;right:0;top:0;width:3px;height:100%;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:0 16px 16px 0;}
+@keyframes itemSlide{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.item-row.new-item{border-color:rgba(124,58,237,0.5);background:rgba(124,58,237,0.08);box-shadow:0 0 20px rgba(124,58,237,0.15);}
+.item-emoji{font-size:28px;width:50px;height:50px;background:rgba(255,255,255,0.06);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.item-details{flex:1;}
+.item-name{font-size:16px;font-weight:800;color:var(--white);}
+.item-meta{font-size:12px;color:var(--gray);margin-top:3px;display:flex;align-items:center;gap:12px;}
+.item-qty-badge{background:rgba(124,58,237,0.2);color:var(--accent2);padding:2px 10px;border-radius:10px;font-weight:700;}
+.item-price{font-size:20px;font-weight:900;color:var(--accent2);white-space:nowrap;}
+.item-total-line{font-size:10px;color:var(--gray);text-align:left;}
+.item-row.removing{animation:itemRemove .3s ease forwards;}
+@keyframes itemRemove{to{opacity:0;transform:translateX(-30px);max-height:0;padding:0;margin:0;}}
+
+/* Empty state */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--gray);}
+.empty-icon{font-size:64px;opacity:0.3;animation:floatIcon 3s ease-in-out infinite;}
+@keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.empty-text{font-size:16px;font-weight:600;opacity:0.5;}
+
+/* Total panel */
+.total-panel{
+  background:rgba(124,58,237,0.06);border-right:1px solid var(--border);
+  padding:28px 32px;display:flex;flex-direction:column;gap:20px;
+}
+.total-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:20px;}
+.total-label{font-size:12px;color:var(--gray);font-weight:700;letter-spacing:0.5px;margin-bottom:8px;}
+.total-value{font-size:42px;font-weight:900;color:var(--white);line-height:1;position:relative;}
+.total-value .currency{font-size:18px;color:var(--gray);margin-right:6px;}
+.subtotal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.subtotal-row:last-child{border:none;}
+.subtotal-row-label{font-size:13px;color:var(--gray);}
+.subtotal-row-val{font-size:15px;font-weight:700;}
+
+.payment-method{border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;border:2px solid transparent;}
+.pm-cash{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);}
+.pm-card{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);}
+.pm-debt{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);}
+.pm-icon{font-size:28px;}
+.pm-label{font-size:14px;font-weight:700;}
+.pm-sublabel{font-size:11px;color:var(--gray);margin-top:2px;}
+
+.change-box{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;}
+.change-label{font-size:13px;color:var(--green);font-weight:700;}
+.change-val{font-size:24px;font-weight:900;color:var(--green);}
+
+/* Thank you overlay */
+.thankyou-overlay{
+  position:absolute;inset:0;z-index:100;
+  background:rgba(10,10,26,0.95);backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  opacity:0;pointer-events:none;transition:opacity .5s ease;
+}
+.thankyou-overlay.show{opacity:1;pointer-events:auto;}
+.ty-check{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),#059669);
+  display:flex;align-items:center;justify-content:center;
+  font-size:50px;
+  animation:tyPop .6s cubic-bezier(0.175,0.885,0.32,1.275);
+  box-shadow:0 0 60px rgba(16,185,129,0.5);
+}
+@keyframes tyPop{from{transform:scale(0) rotate(-180deg)}to{transform:scale(1) rotate(0)}}
+.ty-title{font-size:48px;font-weight:900;color:var(--white);}
+.ty-sub{font-size:20px;color:var(--gray);}
+.ty-total{font-size:32px;font-weight:900;color:var(--green);}
+.ty-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.particle{position:absolute;width:8px;height:8px;border-radius:50%;animation:particleFly 2s ease-out forwards;}
+@keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
+
+/* =============================================
+   PART 5 — ADS SCREEN (Idle Mode)
+   ============================================= */
+#screen-ads{background:transparent;}
+
+.ads-header{
+  height:70px;background:rgba(15,15,40,0.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 40px;flex-shrink:0;
+}
+.ads-shop-brand{display:flex;align-items:center;gap:14px;}
+.ads-shop-name{font-size:18px;font-weight:900;}
+.ads-shop-name span{font-size:10px;color:var(--gray);display:block;}
+.ads-clock{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--gray);direction:ltr;}
+
+.ads-body{flex:1;position:relative;overflow:hidden;}
+
+/* Slideshow */
+.slide{position:absolute;inset:0;display:flex;opacity:0;transition:opacity 1s ease;pointer-events:none;}
+.slide.active{opacity:1;pointer-events:auto;}
+
+/* Slide types */
+.slide-promo{flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:40px;}
+.slide-promo-bg{position:absolute;inset:0;z-index:0;}
+.slide-promo-content{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.slide-promo-tag{background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.5);color:var(--gold);padding:6px 20px;border-radius:20px;font-size:13px;font-weight:700;letter-spacing:1px;}
+.slide-promo-title{font-size:clamp(32px,5vw,64px);font-weight:900;line-height:1.1;}
+.slide-promo-desc{font-size:clamp(14px,1.5vw,18px);color:var(--gray);max-width:600px;line-height:1.7;}
+.slide-promo-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));padding:14px 40px;border-radius:50px;font-size:clamp(16px,2vw,24px);font-weight:900;box-shadow:0 8px 40px rgba(124,58,237,0.5);}
+
+.slide-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:50px;align-content:center;}
+.stat-big-card{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:24px;
+  padding:30px;display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;
+  animation:cardPulse 4s ease-in-out infinite alternate;
+}
+.stat-big-card:nth-child(2){animation-delay:-1.5s;}
+.stat-big-card:nth-child(3){animation-delay:-3s;}
+@keyframes cardPulse{0%{transform:translateY(0)}100%{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.2);}}
+.sbc-icon{font-size:48px;}
+.sbc-label{font-size:13px;color:var(--gray);font-weight:600;}
+.sbc-val{font-size:clamp(28px,3vw,48px);font-weight:900;}
+.sbc-val.green{color:var(--green);}
+.sbc-val.purple{color:var(--accent2);}
+.sbc-val.gold{color:var(--gold);}
+.sbc-sub{font-size:11px;color:var(--gray);}
+
+.slide-welcome{flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:40px;text-align:center;}
+.welcome-logo{width:100px;height:100px;background:linear-gradient(135deg,var(--gold),#f97316);border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:52px;box-shadow:0 20px 60px rgba(245,158,11,0.4);animation:welcomeLogo 3s ease-in-out infinite alternate;}
+@keyframes welcomeLogo{0%{transform:rotate(-3deg) scale(1)}100%{transform:rotate(3deg) scale(1.05)}}
+.welcome-title{font-size:clamp(40px,6vw,80px);font-weight:900;background:linear-gradient(135deg,var(--white),var(--accent2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+.welcome-sub{font-size:clamp(16px,2vw,24px);color:var(--gray);}
+.welcome-cta{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
+.wcta-item{background:var(--card-bg);border:1px solid var(--border);padding:12px 24px;border-radius:14px;font-size:clamp(13px,1.2vw,16px);color:var(--white);font-weight:700;}
+.wcta-item span{color:var(--accent2);margin-left:6px;}
+
+/* Ticker */
+.ads-ticker{
+  height:44px;background:rgba(124,58,237,0.15);border-top:1px solid rgba(124,58,237,0.3);
+  display:flex;align-items:center;overflow:hidden;flex-shrink:0;gap:0;
+}
+.ticker-label{background:linear-gradient(135deg,var(--accent),var(--accent2));padding:0 20px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:800;white-space:nowrap;letter-spacing:1px;flex-shrink:0;}
+.ticker-track{flex:1;overflow:hidden;position:relative;height:100%;}
+.ticker-inner{display:flex;align-items:center;gap:60px;white-space:nowrap;font-size:13px;color:var(--gray);font-weight:600;position:absolute;top:50%;transform:translateY(-50%);animation:tickerScroll 30s linear infinite;}
+@keyframes tickerScroll{from{right:-100%}to{right:100%}}
+.ticker-sep{color:var(--accent2);font-size:18px;}
+
+/* Slide progress dots */
+.slide-dots{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:20;}
+.slide-dot{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,0.2);transition:all .4s ease;cursor:pointer;}
+.slide-dot.active{width:28px;background:var(--accent2);}
+
+/* =============================================
+   PART 6 — TRANSITIONS & UTILITIES
+   ============================================= */
+.screen-transition-in{animation:screenIn .8s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes screenIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}
+
+.glow-text{text-shadow:0 0 30px rgba(124,58,237,0.6);}
+.shimmer{position:relative;overflow:hidden;}
+.shimmer::after{content:'';position:absolute;top:0;right:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);animation:shimmerMove 3s infinite;}
+@keyframes shimmerMove{to{right:100%}}
+
+/* Connection bar between screens */
+.mode-indicator{
+  position:fixed;bottom:0;left:0;right:0;z-index:999;
+  height:4px;background:rgba(255,255,255,0.05);
+}
+.mode-indicator-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .3s ease;}
+
+/* Scanline effect */
+.scanlines{position:fixed;inset:0;z-index:5;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.015) 0px,rgba(0,0,0,0.015) 1px,transparent 1px,transparent 2px);}
+
+/* =============================================
+   PART 7 — RESPONSIVE
+   ============================================= */
+@media(max-width:900px){
+  .cashier-body{grid-template-columns:1fr;}
+  .total-panel{border-right:none;border-top:1px solid var(--border);}
+  .slide-stats{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .cashier-header,.ads-header{padding:0 20px;}
+  .items-panel,.total-panel{padding:16px;}
+  .total-value{font-size:32px;}
+  .slide-stats{grid-template-columns:1fr;}
+}
+</style>
+   <!-- ربط ملف الـ Manifest ليعمل كـ PWA -->
+<link rel="manifest" href="manifest.json">
+
+<!-- تحديد لون شريط الحالة ليتوافق مع التصميم المظلم للشاشة -->
+<meta name="theme-color" content="#0a0a1a">
+
+<!-- دعم أجهزة آبل iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+<!-- ==========================================
+     BACKGROUND LAYER
+     ========================================== -->
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-orb bg-orb1"></div>
+  <div class="bg-orb bg-orb2"></div>
+  <div class="bg-orb bg-orb3"></div>
+</div>
+<div class="scanlines"></div>
+
+<!-- ==========================================
+     SCREEN 1: CASHIER POS DISPLAY
+     ========================================== -->
+<div id="screen-cashier" class="screen">
+  <!-- Header -->
+  <div class="cashier-header">
+    <div class="shop-brand">
+      <div class="shop-logo">📚</div>
+      <div>
+        <div class="shop-name">مكتبة حشايشي<span>أهلاً بكم — خدمتكم شرف لنا</span></div>
+      </div>
+    </div>
+    <div class="live-badge"><div class="live-dot"></div> مباشر</div>
+    <div class="cashier-clock">
+      <div class="clock-time" id="cash-time">--:--:--</div>
+      <div class="clock-date" id="cash-date">جارٍ التحميل...</div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="cashier-body">
+    <!-- Items List -->
+    <div class="items-panel">
+      <div class="items-title">🛒 قائمة مشترياتك</div>
+      <div class="items-list" id="items-list">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">🛍️</div>
+          <div class="empty-text">في انتظار إضافة المنتجات...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div class="total-panel">
+      <div class="total-card shimmer">
+        <div class="total-label">💰 إجمالي الفاتورة</div>
+        <div class="total-value" id="total-display"><span class="currency">د.ج</span><span id="total-num">0.00</span></div>
+      </div>
+
+      <div id="subtotals-block" style="display:none;">
+        <div class="total-card" style="padding:14px 20px;">
+          <div class="subtotal-row">
+            <div class="subtotal-row-label">عدد الأصناف</div>
+            <div class="subtotal-row-val" id="items-count">0</div>
+          </div>
+          <div class="subtotal-row">
+            <div class="subtotal-row-label">المجموع الجزئي</div>
+            <div class="subtotal-row-val" id="subtotal-val">0.00 د.ج</div>
+          </div>
+          <div class="subtotal-row" id="discount-row" style="display:none;">
+            <div class="subtotal-row-label" style="color:var(--green);">✨ خصم</div>
+            <div class="subtotal-row-val" style="color:var(--green);" id="discount-val">-0.00 د.ج</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="payment-method-block" style="display:none;"></div>
+      <div id="change-block" style="display:none;"></div>
+
+      <div style="flex:1;"></div>
+      <div style="text-align:center;color:rgba(255,255,255,0.12);font-size:12px;line-height:1.8;">
+        نشكركم على اختياركم مكتبة حشايشي<br>
+        ✨ جودة • أمانة • خدمة
+      </div>
+    </div>
+  </div>
+
+  <!-- Thank You Overlay -->
+  <div class="thankyou-overlay" id="thankyou-overlay">
+    <div class="ty-particles" id="ty-particles"></div>
+    <div class="ty-check">✓</div>
+    <div class="ty-title">شكراً لك!</div>
+    <div class="ty-sub">تمت عملية الشراء بنجاح</div>
+    <div class="ty-total" id="ty-total-display"></div>
+    <div style="font-size:14px;color:var(--gray);margin-top:8px;">نتمنى لك يوماً سعيداً 😊</div>
+  </div>
+</div>
+
+<!-- ==========================================
+     SCREEN 2: ADS / IDLE MODE
+     ========================================== -->
+<div id="screen-ads" class="screen hidden">
+  <!-- Header -->
+  <div class="ads-header">
+    <div class="ads-shop-brand">
+      <div class="shop-logo" style="width:42px;height:42px;font-size:22px;">📚</div>
+      <div class="ads-shop-name">مكتبة حشايشي<span>إبداع وتطور مستمر · منذ 2015</span></div>
+    </div>
+    <div class="ads-clock" id="ads-time">--:--</div>
+  </div>
+
+  <!-- Slides Container -->
+  <div class="ads-body">
+
+    <!-- Slide 1: Welcome -->
+    <div class="slide slide-welcome active" id="slide-0">
+      <div class="slide-promo-bg" style="background:radial-gradient(ellipse at center,rgba(124,58,237,0.12) 0%,transparent 70%),radial-gradient(ellipse at 80% 20%,rgba(245,158,11,0.08) 0%,transparent 50%);"></div>
+      <div class="welcome-logo">📚</div>
+      <div class="welcome-title">أهلاً بكم</div>
+      <div class="welcome-sub">مكتبتكم المفضلة — جودة بلا تنازل</div>
+      <div class="welcome-cta">
+        <div class="wcta-item"><span>📚</span> قرطاسية</div>
+        <div class="wcta-item"><span>🖨️</span> طباعة</div>
+        <div class="wcta-item"><span>📱</span> خدمات هاتف</div>
+        <div class="wcta-item"><span>🎨</span> لوازم مدرسية</div>
+        <div class="wcta-item"><span>📦</span> مستلزمات مكتبية</div>
+      </div>
+    </div>
+
+    <!-- Slide 2: Promotion -->
+    <div class="slide" id="slide-1">
+      <div class="slide-promo-bg" style="background:radial-gradient(ellipse at 30% 50%,rgba(168,85,247,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 50%,rgba(124,58,237,0.1) 0%,transparent 50%);"></div>
+      <div class="slide-promo-content" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:24px;padding:40px;">
+        <div class="slide-promo-tag">🎉 عرض حصري</div>
+        <div class="slide-promo-title glow-text" style="text-align:center;">خدمة الطباعة<br><span style="color:var(--accent2);">بأفضل الأسعار</span></div>
+        <div class="slide-promo-desc">طباعة ملونة وأبيض وأسود، تصوير وتجليد، بطاقات ولافتات — جميع الخدمات تحت سقف واحد</div>
+        <div class="slide-promo-badge">🖨️ خدمات الطباعة المتكاملة</div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Stats -->
+    <div class="slide" id="slide-2">
+      <div class="slide-promo-bg" style="background:radial-gradient(ellipse at 20% 80%,rgba(16,185,129,0.1) 0%,transparent 60%);"></div>
+      <div class="slide-stats" style="width:100%;height:100%;">
+        <div class="stat-big-card">
+          <div class="sbc-icon">⭐</div>
+          <div class="sbc-label">تقييم العملاء</div>
+          <div class="sbc-val gold">5 / 5</div>
+          <div class="sbc-sub">خدمة عملاء ممتازة</div>
+        </div>
+        <div class="stat-big-card">
+          <div class="sbc-icon">📦</div>
+          <div class="sbc-label">منتجات متاحة</div>
+          <div class="sbc-val purple" id="ads-product-count">---</div>
+          <div class="sbc-sub">صنف متنوع ومتجدد</div>
+        </div>
+        <div class="stat-big-card">
+          <div class="sbc-icon">🤝</div>
+          <div class="sbc-label">زبائننا الكرام</div>
+          <div class="sbc-val green" id="ads-client-count">---</div>
+          <div class="sbc-sub">عائلة متنامية</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Services -->
+    <div class="slide" id="slide-3">
+      <div class="slide-promo-bg" style="background:radial-gradient(ellipse at 70% 30%,rgba(59,130,246,0.12) 0%,transparent 60%);"></div>
+      <div class="slide-promo-content" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:24px;padding:40px;">
+        <div class="slide-promo-tag" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);color:#60a5fa;">📱 خدمات الاتصالات</div>
+        <div class="slide-promo-title glow-text" style="text-align:center;font-size:clamp(28px,4vw,56px);">شحن رصيد<br><span style="color:#60a5fa;">جميع الشبكات</span></div>
+        <div class="slide-promo-desc">فليكسي موبيليس، جازي، أوريدو — بطاقات الإنترنت وتحويل الرصيد بسهولة وسرعة</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+          <div class="wcta-item" style="border-color:rgba(59,130,246,0.3);"><span>🟢</span> موبيليس</div>
+          <div class="wcta-item" style="border-color:rgba(59,130,246,0.3);"><span>🔴</span> جازي</div>
+          <div class="wcta-item" style="border-color:rgba(59,130,246,0.3);"><span>🟡</span> أوريدو</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide dots -->
+    <div class="slide-dots" id="slide-dots">
+      <div class="slide-dot active" onclick="goToSlide(0)"></div>
+      <div class="slide-dot" onclick="goToSlide(1)"></div>
+      <div class="slide-dot" onclick="goToSlide(2)"></div>
+      <div class="slide-dot" onclick="goToSlide(3)"></div>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ads-ticker">
+    <div class="ticker-label">📢 أخبارنا</div>
+    <div class="ticker-track">
+      <div class="ticker-inner" id="ticker-inner">
+        <span>🎉 أهلاً وسهلاً بكم في مكتبة حشايشي</span>
+        <span class="ticker-sep">✦</span>
+        <span>📚 أوسع تشكيلة من اللوازم المدرسية والمكتبية</span>
+        <span class="ticker-sep">✦</span>
+        <span>🖨️ خدمات الطباعة متاحة بأحسن الأسعار</span>
+        <span class="ticker-sep">✦</span>
+        <span>📱 شحن رصيد جميع الشبكات</span>
+        <span class="ticker-sep">✦</span>
+        <span>💙 نشكركم على ثقتكم بنا دائماً</span>
+        <span class="ticker-sep">✦</span>
+        <span>🎁 عروض خاصة ومتجددة طوال الموسم</span>
+        <span class="ticker-sep">✦</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mode Indicator -->
+<div class="mode-indicator"><div class="mode-indicator-bar" id="mode-bar"></div></div>
+
+<!-- ==========================================
+     JAVASCRIPT — PART 1: CORE ENGINE
+     ========================================== -->
+<script>
+// ============================================================
+// CONSTANTS & STATE
+// ============================================================
+const IDLE_TIMEOUT = 45000;   // 45s no activity → ads mode
+const ADS_SLIDE_INTERVAL = 6000; // 6s per slide
+const THANKYOU_DURATION = 3500;  // 3.5s thank you screen
+const STORAGE_KEY = 'hashayshi_db';
+
+let state = {
+  mode: 'ads',          // 'cashier' | 'ads'
+  items: [],             // current sale items
+  total: 0,
+  discount: 0,
+  paymentMethod: null,
+  paid: 0,
+  idleTimer: null,
+  adsSlideTimer: null,
+  currentSlide: 0,
+  totalSlides: 4,
+  showingThankyou: false,
+};
+
+// ============================================================
+// CLOCK
+// ============================================================
+function updateClocks(){
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('ar-DZ',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const dateStr = now.toLocaleDateString('ar-DZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const timeShort = now.toLocaleTimeString('ar-DZ',{hour:'2-digit',minute:'2-digit'});
+  el('cash-time').textContent = timeStr;
+  el('cash-date').textContent = dateStr;
+  el('ads-time').textContent = timeShort;
+}
+setInterval(updateClocks, 1000);
+updateClocks();
+
+// ============================================================
+// HELPERS
+// ============================================================
+function el(id){ return document.getElementById(id); }
+function fmt(n){ return Number(n).toLocaleString('ar-DZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function readDB(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+// ============================================================
+// SCREEN SWITCHER
+// ============================================================
+function showCashier(){
+  if(state.mode === 'cashier') return;
+  state.mode = 'cashier';
+  el('screen-ads').classList.add('hidden');
+  el('screen-cashier').classList.remove('hidden');
+  el('screen-cashier').classList.add('screen-transition-in');
+  stopAdsSlideshow();
+  el('mode-bar').style.background = 'linear-gradient(90deg,var(--green),#34d399)';
+  el('mode-bar').style.width = '100%';
+  setTimeout(()=>el('screen-cashier').classList.remove('screen-transition-in'),800);
+}
+
+function showAds(){
+  if(state.mode === 'ads') return;
+  state.mode = 'ads';
+  el('screen-cashier').classList.add('hidden');
+  el('screen-ads').classList.remove('hidden');
+  el('screen-ads').classList.add('screen-transition-in');
+  startAdsSlideshow();
+  loadAdsStats();
+  el('mode-bar').style.background = 'linear-gradient(90deg,var(--accent),var(--accent2))';
+  el('mode-bar').style.width = '100%';
+  setTimeout(()=>el('screen-ads').classList.remove('screen-transition-in'),800);
+}
+
+// ============================================================
+// IDLE TIMER
+// ============================================================
+function resetIdleTimer(){
+  clearTimeout(state.idleTimer);
+  state.idleTimer = setTimeout(()=>{
+    if(!state.showingThankyou && state.items.length === 0){
+      showAds();
+    }
+  }, IDLE_TIMEOUT);
+}
+
+// ============================================================
+// ADS SLIDESHOW
+// ============================================================
+function startAdsSlideshow(){
+  goToSlide(0);
+  stopAdsSlideshow();
+  state.adsSlideTimer = setInterval(()=>{
+    const next = (state.currentSlide + 1) % state.totalSlides;
+    goToSlide(next);
+  }, ADS_SLIDE_INTERVAL);
+}
+
+function stopAdsSlideshow(){
+  clearInterval(state.adsSlideTimer);
+}
+
+function goToSlide(idx){
+  // Hide current
+  const oldSlide = document.querySelector('.slide.active');
+  if(oldSlide) oldSlide.classList.remove('active');
+  const oldDot = document.querySelector('.slide-dot.active');
+  if(oldDot) oldDot.classList.remove('active');
+
+  // Show new
+  state.currentSlide = idx;
+  const slide = el('slide-'+idx);
+  if(slide) slide.classList.add('active');
+  const dots = document.querySelectorAll('.slide-dot');
+  if(dots[idx]) dots[idx].classList.add('active');
+}
+
+function loadAdsStats(){
+  const db = readDB();
+  if(!db) return;
+  const prodCount = db.products ? db.products.length : 0;
+  const clientCount = db.clients ? db.clients.length : 0;
+  el('ads-product-count').textContent = prodCount > 0 ? prodCount + '+' : '---';
+  el('ads-client-count').textContent = clientCount > 0 ? clientCount + '+' : '---';
+}
+</script>
+
+<!-- ==========================================
+     JAVASCRIPT — PART 2: SALE DISPLAY ENGINE
+     ========================================== -->
+<script>
+// ============================================================
+// RENDER ITEMS
+// ============================================================
+const PRODUCT_EMOJIS = {
+  'قرطاسية':'✏️','كتاب':'📖','دفتر':'📓','قلم':'🖊️','مقص':'✂️',
+  'ورق':'📄','ألوان':'🎨','محفظة':'👝','مسطرة':'📏','مبراة':'🖍️',
+  default:'📦'
+};
+
+function getEmoji(name){
+  for(const [key, emoji] of Object.entries(PRODUCT_EMOJIS)){
+    if(name && name.includes(key)) return emoji;
+  }
+  return PRODUCT_EMOJIS.default;
+}
+
+function renderItems(){
+  const list = el('items-list');
+  const empty = el('empty-state');
+  
+  if(state.items.length === 0){
+    empty.style.display = 'flex';
+    // Remove all item rows but keep empty state
+    Array.from(list.children).forEach(c=>{
+      if(c.id !== 'empty-state') c.remove();
+    });
+    el('subtotals-block').style.display = 'none';
+    el('payment-method-block').style.display = 'none';
+    el('change-block').style.display = 'none';
+    el('total-num').textContent = '0.00';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  el('subtotals-block').style.display = 'block';
+
+  // Build item rows
+  // Show max 5 items to avoid overflow, with scroll feel
+  const visibleItems = state.items.slice(-5);
+  
+  // Clear and re-render
+  Array.from(list.children).forEach(c=>{
+    if(c.id !== 'empty-state') c.remove();
+  });
+  
+  visibleItems.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'item-row' + (i === visibleItems.length - 1 ? ' new-item' : '');
+    row.innerHTML = `
+      <div class="item-emoji">${getEmoji(item.name)}</div>
+      <div class="item-details">
+        <div class="item-name">${item.name}</div>
+        <div class="item-meta">
+          <span class="item-qty-badge">×${item.qty}</span>
+          <span>${fmt(item.price)} د.ج / الوحدة</span>
+        </div>
+      </div>
+      <div style="text-align:left;">
+        <div class="item-price">${fmt(item.price * item.qty)}</div>
+        <div class="item-total-line">د.ج</div>
+      </div>
+    `;
+    list.insertBefore(row, empty);
+  });
+
+  if(state.items.length > 5){
+    const moreEl = document.createElement('div');
+    moreEl.style.cssText = 'text-align:center;color:var(--gray);font-size:12px;padding:8px;';
+    moreEl.textContent = `+ ${state.items.length - 5} منتجات أخرى`;
+    list.insertBefore(moreEl, empty);
+  }
+  
+  // Update totals
+  const sub = state.items.reduce((s,i)=>s+(i.price*i.qty),0);
+  const total = sub - (state.discount || 0);
+  
+  el('total-num').textContent = fmt(total);
+  el('items-count').textContent = state.items.length + ' صنف';
+  el('subtotal-val').textContent = fmt(sub) + ' د.ج';
+  
+  const discRow = el('discount-row');
+  if(state.discount > 0){
+    discRow.style.display = 'flex';
+    el('discount-val').textContent = '-' + fmt(state.discount) + ' د.ج';
+  } else {
+    discRow.style.display = 'none';
+  }
+  
+  renderPaymentInfo();
+}
+
+// ============================================================
+// PAYMENT INFO
+// ============================================================
+const PAYMENT_INFO = {
+  cash: { label:'نقداً', sublabel:'الدفع الفوري', icon:'💵', cls:'pm-cash' },
+  card: { label:'بطاقة بنكية', sublabel:'Visa / CIB / Edahabia', icon:'💳', cls:'pm-card' },
+  debt: { label:'دين — آجل', sublabel:'مسجل في حساب الزبون', icon:'📝', cls:'pm-debt' },
+};
+
+function renderPaymentInfo(){
+  const pmBlock = el('payment-method-block');
+  const changeBlock = el('change-block');
+  
+  if(!state.paymentMethod){
+    pmBlock.style.display = 'none';
+    changeBlock.style.display = 'none';
+    return;
+  }
+  
+  const pm = PAYMENT_INFO[state.paymentMethod] || {label:state.paymentMethod,icon:'💰',cls:'pm-cash',sublabel:''};
+  pmBlock.style.display = 'block';
+  pmBlock.innerHTML = `
+    <div class="payment-method ${pm.cls}">
+      <div class="pm-icon">${pm.icon}</div>
+      <div>
+        <div class="pm-label">${pm.label}</div>
+        <div class="pm-sublabel">${pm.sublabel}</div>
+      </div>
+    </div>
+  `;
+  
+  const total = state.total;
+  const change = state.paid - total;
+  if(state.paid > 0 && change >= 0 && state.paymentMethod === 'cash'){
+    changeBlock.style.display = 'flex';
+    changeBlock.innerHTML = `
+      <div class="change-box">
+        <div>
+          <div class="change-label">💵 مبلغ مدفوع: ${fmt(state.paid)} د.ج</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:4px;">الباقي للزبون</div>
+        </div>
+        <div class="change-val">${fmt(change)} <span style="font-size:14px;">د.ج</span></div>
+      </div>
+    `;
+  } else {
+    changeBlock.style.display = 'none';
+  }
+}
+
+// ============================================================
+// THANK YOU SCREEN
+// ============================================================
+function showThankyou(total){
+  state.showingThankyou = true;
+  el('ty-total-display').textContent = fmt(total) + ' د.ج';
+  
+  // Create particles
+  const container = el('ty-particles');
+  container.innerHTML = '';
+  const colors = ['#7c3aed','#a855f7','#f59e0b','#10b981','#3b82f6','#ec4899'];
+  for(let i = 0; i < 30; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.cssText = `
+      background:${color};
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      --dx:${(Math.random()-0.5)*400}px;
+      --dy:${(Math.random()-0.5)*400}px;
+      animation-delay:${Math.random()*0.5}s;
+      animation-duration:${1.5+Math.random()}s;
+      width:${4+Math.random()*8}px;
+      height:${4+Math.random()*8}px;
+    `;
+    container.appendChild(p);
+  }
+  
+  el('thankyou-overlay').classList.add('show');
+  setTimeout(()=>{
+    el('thankyou-overlay').classList.remove('show');
+    state.showingThankyou = false;
+    clearSale();
+  }, THANKYOU_DURATION);
+}
+
+function clearSale(){
+  state.items = [];
+  state.total = 0;
+  state.discount = 0;
+  state.paymentMethod = null;
+  state.paid = 0;
+  renderItems();
+  resetIdleTimer();
+}
+</script>
+
+<!-- ==========================================
+     JAVASCRIPT — PART 3: LIVE SYNC ENGINE
+     ========================================== -->
+<script>
+// ============================================================
+// POLL localStorage for changes from POS
+// ============================================================
+let lastSaleId = null;
+let lastCartHash = null;
+
+function pollPOS(){
+  const db = readDB();
+  if(!db) return;
+  
+  // ── CART WATCHER ──
+  // We watch a special key that the POS system writes
+  const cartData = localStorage.getItem('hashayshi_display_cart');
+  if(cartData){
+    try{
+      const cart = JSON.parse(cartData);
+      const cartHash = JSON.stringify(cart);
+      if(cartHash !== lastCartHash){
+        lastCartHash = cartHash;
+        if(cart.active){
+          showCashier();
+          resetIdleTimer();
+          state.items = cart.items || [];
+          state.total = cart.total || 0;
+          state.discount = cart.discount || 0;
+          state.paymentMethod = cart.paymentMethod || null;
+          state.paid = cart.paid || 0;
+          renderItems();
+        }
+      }
+    }catch(e){}
+  }
+  
+  // ── SALE COMPLETE WATCHER ──
+  const saleComplete = localStorage.getItem('hashayshi_display_complete');
+  if(saleComplete){
+    try{
+      const sale = JSON.parse(saleComplete);
+      if(sale.id && sale.id !== lastSaleId){
+        lastSaleId = sale.id;
+        showCashier();
+        showThankyou(sale.total || 0);
+        localStorage.removeItem('hashayshi_display_complete');
+      }
+    }catch(e){}
+  }
+  
+  // ── RECENT SALE WATCHER (fallback) ──
+  if(db.sales && db.sales.length > 0){
+    const lastSale = db.sales[db.sales.length - 1];
+    const saleId = lastSale.id || lastSale.date;
+    // Only trigger if it's from today
+    const today = new Date().toISOString().slice(0,10);
+    if(saleId !== lastSaleId && lastSale.dateStr === today){
+      // Don't re-trigger old sales on first load
+      if(lastSaleId !== null){
+        lastSaleId = saleId;
+        showCashier();
+        // Show sale items briefly
+        if(lastSale.items){
+          state.items = lastSale.items.map(i=>({
+            name: i.name || i.n || 'منتج',
+            price: i.price || i.p || 0,
+            qty: i.qty || i.q || 1,
+          }));
+          state.total = lastSale.total || 0;
+          state.paymentMethod = lastSale.method || 'cash';
+          renderItems();
+        }
+        setTimeout(()=>showThankyou(lastSale.total||0), 1200);
+      } else {
+        lastSaleId = saleId;
+      }
+    }
+  }
+}
+
+// Start polling every 500ms
+setInterval(pollPOS, 500);
+// Initial state
+setTimeout(()=>{
+  const cartData = localStorage.getItem('hashayshi_display_cart');
+  if(!cartData || !JSON.parse(cartData||'{}').active){
+    showAds();
+  }
+}, 1000);
+
+resetIdleTimer();
+startAdsSlideshow();
+
+// ============================================================
+// INTEGRATION HELPERS — called from POS page (same browser)
+// ============================================================
+// These functions can be called from the POS page:
+//   window.customerDisplay.updateCart(items, total, discount, paymentMethod, paid)
+//   window.customerDisplay.completeSale(total)
+//   window.customerDisplay.clearCart()
+window.customerDisplay = {
+  updateCart(items, total, discount=0, paymentMethod=null, paid=0){
+    localStorage.setItem('hashayshi_display_cart', JSON.stringify({
+      active:true, items, total, discount, paymentMethod, paid,
+      ts: Date.now()
+    }));
+  },
+  completeSale(total){
+    localStorage.setItem('hashayshi_display_complete', JSON.stringify({
+      id: 'sale_'+Date.now(), total, ts: Date.now()
+    }));
+    localStorage.setItem('hashayshi_display_cart', JSON.stringify({active:false,items:[],total:0}));
+  },
+  clearCart(){
+    localStorage.setItem('hashayshi_display_cart', JSON.stringify({active:false,items:[],total:0}));
+  }
+};
+
+// ============================================================
+// DEMO MODE — if no POS, run a demo
+// ============================================================
+function runDemo(){
+  const demoItems = [
+    [{name:'دفاتر مدرسية ×5',price:250,qty:1},{name:'أقلام بيك',price:45,qty:3}],
+    [{name:'ورق A4 رزمة',price:480,qty:2},{name:'مقص كبير',price:120,qty:1},{name:'لاصق سريع',price:35,qty:2}],
+    [{name:'محفظة مدرسية',price:850,qty:1}],
+  ];
+  
+  let demoIdx = 0;
+  
+  function demoSale(){
+    const items = demoItems[demoIdx % demoItems.length];
+    const methods = ['cash','card','cash'];
+    const method = methods[demoIdx % 3];
+    
+    showCashier();
+    state.items = [];
+    renderItems();
+    
+    // Add items one by one
+    let i = 0;
+    const addItem = ()=>{
+      if(i < items.length){
+        state.items.push(items[i]);
+        renderItems();
+        i++;
+        setTimeout(addItem, 800);
+      } else {
+        state.total = state.items.reduce((s,it)=>s+(it.price*it.qty),0);
+        state.paymentMethod = method;
+        state.paid = method === 'cash' ? Math.ceil(state.total/100)*100 + 100 : state.total;
+        renderItems();
+        setTimeout(()=>{
+          showThankyou(state.total);
+          setTimeout(()=>{
+            demoIdx++;
+            setTimeout(demoSale, ADS_SLIDE_INTERVAL);
+          }, THANKYOU_DURATION + 500);
+        }, 2000);
+      }
+    };
+    setTimeout(addItem, 600);
+  }
+  
+  // Start demo after 8s if no real data
+  setTimeout(()=>{
+    const db = readDB();
+    const hasRecentSales = db && db.sales && db.sales.length > 0;
+    if(!hasRecentSales){
+      demoSale();
+      setInterval(()=>{ if(state.mode === 'ads' && !state.showingThankyou) demoSale(); }, 25000);
+    }
+  }, 8000);
+}
+
+runDemo();
+</script>
+<!-- ══════════════════════════════════════════════
+     ✅ FIXES: DB Keys + Admin Config + Demo Control
+     ══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ╔══════════════════════════════════════════╗
+// ║ FIX 1: تصحيح readDB — مفاتيح POS الصحيحة ║
+// ╚══════════════════════════════════════════╝
+// المشكلة: display.html تقرأ 'hashayshi_db' لكن POS يحفظ في hch_p, hch_s ...
+readDB = function() {
+  try {
+    var p  = localStorage.getItem('hch_p');
+    var s  = localStorage.getItem('hch_s');
+    var cl = localStorage.getItem('hch_cl');
+    var products = p  ? JSON.parse(p)  : [];
+    var sales    = s  ? JSON.parse(s)  : [];
+    var clients  = cl ? JSON.parse(cl) : [];
+    if (!products.length && !sales.length) return null;
+    return { products: products, sales: sales, clients: clients };
+  } catch(e) { return null; }
+};
+
+// ╔══════════════════════════════════════════╗
+// ║ FIX 2: تحميل إعدادات لوحة التحكم الإدارية ║
+// ╚══════════════════════════════════════════╝
+var _adminTs  = 0;
+var _slideDur = 6000;
+
+var _BG = {
+  purple:'radial-gradient(ellipse at center,rgba(124,58,237,.15) 0%,transparent 70%)',
+  blue:  'radial-gradient(ellipse at center,rgba(59,130,246,.15) 0%,transparent 70%)',
+  green: 'radial-gradient(ellipse at center,rgba(16,185,129,.15) 0%,transparent 70%)',
+  orange:'radial-gradient(ellipse at center,rgba(245,158,11,.15) 0%,transparent 70%)',
+  pink:  'radial-gradient(ellipse at center,rgba(236,72,153,.15) 0%,transparent 70%)',
+  teal:  'radial-gradient(ellipse at center,rgba(20,184,166,.15) 0%,transparent 70%)',
+  dark:  'linear-gradient(135deg,rgba(15,23,42,.95),rgba(30,41,59,.9))'
+};
+
+function _buildSlides(slides, images, durMs) {
+  var body = document.querySelector('#screen-ads .ads-body');
+  var dots = document.getElementById('slide-dots');
+  if (!body || !dots) return;
+
+  body.querySelectorAll('.slide').forEach(function(el){ el.remove(); });
+  stopAdsSlideshow();
+  state.totalSlides = slides.length;
+  state.currentSlide = 0;
+  _slideDur = durMs || 6000;
+
+  var dotsH = '';
+
+  slides.forEach(function(s, i) {
+    var div = document.createElement('div');
+    div.className = 'slide' + (i === 0 ? ' active' : '');
+    div.id = 'slide-' + i;
+
+    // صورة إعلانية
+    var imgH = '';
+    if (s.type === 'image' && s.imageId && images && images.length) {
+      for (var k = 0; k < images.length; k++) {
+        if (images[k].id === s.imageId) {
+          imgH = '<img src="' + images[k].data + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75;z-index:0;">';
+          break;
+        }
+      }
+    }
+
+    var bgH = '<div style="position:absolute;inset:0;background:' + (_BG[s.color]||_BG.purple) + ';z-index:1;"></div>';
+    var cH  = '';
+
+    if (s.type === 'stats') {
+      var db2 = readDB();
+      var pc = db2 && db2.products ? db2.products.length : 0;
+      var cc = db2 && db2.clients  ? db2.clients.length  : 0;
+      cH = '<div class="slide-stats" style="position:relative;z-index:2;width:100%;height:100%;">' +
+        '<div class="stat-big-card"><div class="sbc-icon">⭐</div><div class="sbc-label">تقييم العملاء</div><div class="sbc-val gold">5 / 5</div><div class="sbc-sub">خدمة عملاء ممتازة</div></div>' +
+        '<div class="stat-big-card"><div class="sbc-icon">📦</div><div class="sbc-label">منتجات متاحة</div><div class="sbc-val purple">' + (pc ? pc + '+' : '---') + '</div><div class="sbc-sub">صنف متنوع ومتجدد</div></div>' +
+        '<div class="stat-big-card"><div class="sbc-icon">🤝</div><div class="sbc-label">زبائننا الكرام</div><div class="sbc-val green">' + (cc ? cc + '+' : '---') + '</div><div class="sbc-sub">عائلة متنامية</div></div>' +
+        '</div>';
+    } else if (s.type === 'welcome') {
+      cH = '<div style="position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px;">' +
+        '<div class="welcome-logo">📚</div>' +
+        '<div class="welcome-title">' + (s.title||'أهلاً بكم') + '</div>' +
+        (s.desc ? '<div class="welcome-sub">' + s.desc + '</div>' : '') +
+        '</div>';
+    } else {
+      cH = '<div style="position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;gap:24px;padding:40px;width:100%;">' +
+        (s.badge ? '<div class="slide-promo-tag">' + s.badge + '</div>' : '') +
+        '<div class="slide-promo-title glow-text">' + (s.title||'') + '</div>' +
+        (s.desc ? '<div class="slide-promo-desc">' + s.desc + '</div>' : '') +
+        '</div>';
+    }
+
+    div.innerHTML = imgH + bgH + cH;
+    body.insertBefore(div, dots);
+    dotsH += '<div class="slide-dot' + (i===0?' active':'') + '" onclick="goToSlide(' + i + ')"></div>';
+  });
+
+  dots.innerHTML = dotsH;
+  if (state.mode === 'ads') startAdsSlideshow();
+}
+
+function _applyAdminConfig() {
+  var raw = localStorage.getItem('hashayshi_display_full_config');
+  if (!raw) return false;
+  try {
+    var cfg = JSON.parse(raw);
+    if (cfg.ts === _adminTs) return true; // لم يتغير
+    _adminTs = cfg.ts;
+
+    // تحديث شريط الأخبار
+    if (cfg.ticker && cfg.ticker.length) {
+      var inner = document.getElementById('ticker-inner');
+      if (inner) inner.innerHTML = cfg.ticker.map(function(t) {
+        return '<span>' + t + '</span><span class="ticker-sep">✦</span>';
+      }).join('');
+    }
+
+    if (cfg.slideDuration) _slideDur = cfg.slideDuration;
+
+    // بناء الشرائح الديناميكية
+    if (cfg.slides && cfg.slides.length) {
+      _buildSlides(cfg.slides, cfg.images||[], cfg.slideDuration||6000);
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+// تجاوز startAdsSlideshow لاستخدام المدة من الإدارة
+startAdsSlideshow = function() {
+  goToSlide(0);
+  stopAdsSlideshow();
+  state.adsSlideTimer = setInterval(function() {
+    state.currentSlide = (state.currentSlide + 1) % state.totalSlides;
+    goToSlide(state.currentSlide);
+  }, _slideDur || 6000);
+};
+
+// ╔══════════════════════════════════════════╗
+// ║ FIX 3: إيقاف الديمو عند وجود إعدادات إدارة ║
+// ╚══════════════════════════════════════════╝
+if (typeof demoSale === 'function') {
+  var _origDemo = demoSale;
+  demoSale = function() {
+    if (localStorage.getItem('hashayshi_display_full_config')) return; // لا ديمو إذا يوجد إعدادات
+    _origDemo();
+  };
+}
+
+// ══ تشغيل ══
+_applyAdminConfig();
+setInterval(_applyAdminConfig, 5000); // تحديث كل 5 ثواني
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم شاشة الزبون</title>
+<style>
+/* ═══════════════════════════════════════
+   SECTION 1 — RESET & VARIABLES
+   ═══════════════════════════════════════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --p:#7c3aed;--p2:#6d28d9;--g:#16a34a;--r:#dc2626;
+  --bg:#f0f2f8;--card:#fff;--border:#e5e7eb;
+  --text:#1e1b4b;--sub:#64748b;--muted:#9ca3af;
+}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* ═══════════════════════════════════════
+   SECTION 2 — LAYOUT
+   ═══════════════════════════════════════ */
+.topbar{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(124,58,237,.3);}
+.topbar-brand{display:flex;align-items:center;gap:12px;}
+.topbar-icon{width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.topbar-title{font-size:18px;font-weight:900;}
+.topbar-sub{font-size:11px;opacity:.7;margin-top:2px;}
+.live-badge{display:flex;align-items:center;gap:8px;background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{opacity:.6;box-shadow:0 0 0 6px rgba(16,185,129,0)}}
+
+.container{max-width:1100px;margin:0 auto;padding:24px 16px;display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+@media(max-width:768px){.container{grid-template-columns:1fr;}}
+
+/* ═══════════════════════════════════════
+   SECTION 3 — CARDS & FORMS
+   ═══════════════════════════════════════ */
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px;}
+.card-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;}
+.input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;direction:rtl;background:#fff;color:var(--text);transition:.2s;}
+.input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+.fg{margin-bottom:14px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn{padding:10px 18px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;}
+.btn:active{transform:scale(.96);}
+.btn-p{background:var(--p);color:#fff;}
+.btn-p:hover{background:var(--p2);}
+.btn-g{background:var(--g);color:#fff;}
+.btn-r{background:var(--r);color:#fff;}
+.btn-out{background:#fff;color:var(--p);border:1.5px solid var(--p);}
+.btn-gray{background:#f4f6fb;color:var(--text);border:1px solid var(--border);}
+.btn-full{width:100%;justify-content:center;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+/* ═══════════════════════════════════════
+   SECTION 4 — SLIDES MANAGER
+   ═══════════════════════════════════════ */
+.slides-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.slide-item{background:#f8fafc;border:1.5px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;cursor:grab;transition:.2s;position:relative;}
+.slide-item:hover{border-color:#c4b5fd;background:#faf5ff;}
+.slide-item.dragging{opacity:.5;border:2px dashed var(--p);}
+.slide-drag{color:var(--muted);font-size:18px;cursor:grab;flex-shrink:0;}
+.slide-thumb{width:72px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
+.slide-thumb img{width:100%;height:100%;object-fit:cover;}
+.slide-info{flex:1;min-width:0;}
+.slide-type-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;margin-bottom:4px;}
+.sb-welcome{background:#ede9fe;color:var(--p);}
+.sb-promo{background:#fef3c7;color:#d97706;}
+.sb-stats{background:#dcfce7;color:#16a34a;}
+.sb-image{background:#dbeafe;color:#2563eb;}
+.sb-custom{background:#f3f4f6;color:#374151;}
+.slide-title-text{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slide-dur{font-size:10px;color:var(--muted);margin-top:2px;}
+.slide-actions{display:flex;gap:6px;flex-shrink:0;}
+.ic-btn{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.2s;}
+.ic-edit{background:#f0f9ff;color:#0284c7;}
+.ic-edit:hover{background:#0284c7;color:#fff;}
+.ic-del{background:#fef2f2;color:var(--r);}
+.ic-del:hover{background:var(--r);color:#fff;}
+.ic-toggle{background:#f0fdf4;color:var(--g);}
+.ic-toggle.off{background:#f9fafb;color:var(--muted);}
+.slide-item.disabled{opacity:.5;}
+
+/* ═══════════════════════════════════════
+   SECTION 5 — IMAGE UPLOAD ZONE
+   ═══════════════════════════════════════ */
+.upload-zone{border:2px dashed #c4b5fd;border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:.2s;background:#faf5ff;margin-bottom:12px;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--p);background:#ede9fe;}
+.upload-zone-icon{font-size:40px;margin-bottom:8px;}
+.upload-zone-text{font-size:13px;font-weight:700;color:var(--p);}
+.upload-zone-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.img-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.img-thumb-wrap{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#e2e8f0;}
+.img-thumb-wrap img{width:100%;height:100%;object-fit:cover;}
+.img-thumb-del{position:absolute;top:4px;left:4px;width:22px;height:22px;background:rgba(220,38,38,.9);border-radius:50%;border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* ═══════════════════════════════════════
+   SECTION 6 — TICKER MANAGER
+   ═══════════════════════════════════════ */
+.ticker-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;}
+.ticker-text{flex:1;font-size:12px;font-weight:600;color:var(--text);}
+.ticker-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;transition:.2s;}
+.ticker-del:hover{color:var(--r);background:#fef2f2;}
+
+/* ═══════════════════════════════════════
+   SECTION 7 — PREVIEW PANEL
+   ═══════════════════════════════════════ */
+.preview-wrap{background:#0a0a1a;border-radius:16px;overflow:hidden;border:3px solid var(--p);box-shadow:0 8px 30px rgba(124,58,237,.3);}
+.preview-header{background:rgba(255,255,255,.05);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);}
+.preview-title{color:rgba(255,255,255,.8);font-size:11px;font-weight:700;}
+.preview-screen{height:180px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.preview-content{text-align:center;color:#fff;padding:20px;}
+.preview-ticker{background:rgba(124,58,237,.2);padding:6px 14px;font-size:10px;color:rgba(255,255,255,.6);text-align:center;border-top:1px solid rgba(124,58,237,.3);}
+
+/* ═══════════════════════════════════════
+   SECTION 8 — STATUS & TOAST
+   ═══════════════════════════════════════ */
+.status-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-mini{background:var(--card);border-radius:12px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.04);border:1px solid var(--border);}
+.stat-mini-val{font-size:20px;font-weight:900;color:var(--p);}
+.stat-mini-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-top:2px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1b4b;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;transition:.4s cubic-bezier(.175,.885,.32,1.275);opacity:0;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.ok{background:linear-gradient(135deg,#16a34a,#15803d);}
+.toast.err{background:linear-gradient(135deg,#dc2626,#b91c1c);}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(15,10,40,.6);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;}
+.modal-ov.show{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:18px;}
+.modal-foot{display:flex;gap:10px;margin-top:20px;}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.color-opt{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:.2s;}
+.color-opt.sel{border-color:#1e1b4b;transform:scale(1.1);}
+select.input option{background:#fff;}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-icon">📺</div>
+    <div>
+      <div class="topbar-title">لوحة تحكم شاشة الزبون</div>
+      <div class="topbar-sub">مكتبة حشايشي — Customer Display Admin</div>
+    </div>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    <span id="live-status">متصل بالشاشة</span>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="container">
+
+  <!-- ═══ LEFT COLUMN ═══ -->
+  <div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <div class="stat-mini"><div class="stat-mini-val" id="st-slides">0</div><div class="stat-mini-lbl">شرائح</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="st-imgs">0</div><div class="stat-mini-lbl">صورة</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="st-ticker">0</div><div class="stat-mini-lbl">رسالة</div></div>
+    </div>
+
+    <!-- ═══ SECTION A: SLIDES MANAGER ═══ -->
+    <div class="card">
+      <div class="card-title">🎞️ إدارة الشرائح
+        <button class="btn btn-p btn-sm" onclick="openAddSlide()" style="margin-right:auto">➕ شريحة جديدة</button>
+      </div>
+      <div class="slides-list" id="slides-list"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-g btn-full" onclick="saveAndPush()">💾 حفظ وإرسال للشاشة</button>
+        <button class="btn btn-gray" onclick="previewSlide()" title="معاينة">👁️</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION B: IMAGE UPLOAD ═══ -->
+    <div class="card">
+      <div class="card-title">🖼️ مكتبة الصور الإعلانية</div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('img-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <div class="upload-zone-icon">📸</div>
+        <div class="upload-zone-text">انقر لرفع صور إعلانية</div>
+        <div class="upload-zone-sub">PNG, JPG, GIF — حجم أقصى 2MB للصورة</div>
+      </div>
+      <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="onImgSelect(event)">
+      <div class="img-preview-grid" id="img-grid"></div>
+    </div>
+
+    <!-- ═══ SECTION C: TICKER ═══ -->
+    <div class="card">
+      <div class="card-title">📢 شريط الأخبار المتحرك</div>
+      <div id="ticker-list"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="new-ticker" class="input" placeholder="أدخل رسالة جديدة للشريط..." style="flex:1">
+        <button class="btn btn-p" onclick="addTicker()">➕ إضافة</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION D: SETTINGS ═══ -->
+    <div class="card">
+      <div class="card-title">⚙️ إعدادات الشاشة</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="label">مدة كل شريحة (ثانية)</label>
+          <input id="set-dur" type="number" class="input" value="6" min="3" max="30">
+        </div>
+        <div class="fg">
+          <label class="label">وقت الخمول قبل الإعلانات (ثانية)</label>
+          <input id="set-idle" type="number" class="input" value="45" min="10">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="label">اسم المكتبة في الشاشة</label>
+          <input id="set-shopname" class="input" value="مكتبة حشايشي">
+        </div>
+        <div class="fg">
+          <label class="label">شعار الترحيب</label>
+          <input id="set-welcome" class="input" value="أهلاً بكم">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="label">رسالة تحت الشعار</label>
+        <input id="set-sub" class="input" value="مكتبتكم المفضلة — جودة بلا تنازل">
+      </div>
+      <button class="btn btn-g btn-full" onclick="saveAndPush()">💾 تطبيق الإعدادات</button>
+    </div>
+
+  </div><!-- end left column -->
+
+  <!-- ═══ RIGHT COLUMN ═══ -->
+  <div>
+
+    <!-- PREVIEW -->
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px">
+      <div style="padding:14px 16px;font-size:13px;font-weight:800;border-bottom:1px solid var(--border)">👁️ معاينة مباشرة</div>
+      <div class="preview-wrap" style="border-radius:0;border:none;">
+        <div class="preview-header">
+          <span class="preview-title" id="prev-shopname">📚 مكتبة حشايشي</span>
+          <span style="color:rgba(255,255,255,.4);font-size:10px" id="prev-clock">--:--</span>
+        </div>
+        <div class="preview-screen" id="preview-screen">
+          <div class="preview-content" id="preview-content">
+            <div style="font-size:36px;margin-bottom:8px">📚</div>
+            <div style="font-size:18px;font-weight:900" id="prev-welcome">أهلاً بكم</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:6px" id="prev-sub">مكتبتكم المفضلة</div>
+          </div>
+        </div>
+        <div class="preview-ticker" id="preview-ticker">📢 أخبارنا ✦ أهلاً وسهلاً بكم في مكتبة حشايشي</div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="card">
+      <div class="card-title">⚡ إجراءات سريعة</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-p btn-full" onclick="pushNowToDisplay()">📡 إرسال فوري للشاشة</button>
+        <button class="btn btn-out btn-full" onclick="clearDisplayCart()">🧹 مسح السلة من الشاشة</button>
+        <button class="btn btn-gray btn-full" onclick="openDisplayInNewTab()">🔗 فتح شاشة الزبون</button>
+        <button class="btn btn-gray btn-full" onclick="exportConfig()">💾 تصدير الإعدادات</button>
+        <button class="btn btn-gray btn-full" onclick="document.getElementById('import-cfg').click()">📥 استيراد إعدادات</button>
+        <input type="file" id="import-cfg" accept=".json" style="display:none" onchange="importConfig(event)">
+      </div>
+    </div>
+
+    <!-- DISPLAY STATUS -->
+    <div class="card">
+      <div class="card-title">📊 حالة الشاشة الآن</div>
+      <div id="display-status" style="font-size:12px;line-height:2;color:var(--sub)">
+        جارٍ التحميل...
+      </div>
+    </div>
+
+  </div><!-- end right column -->
+</div><!-- end container -->
+
+<!-- ═══ ADD/EDIT SLIDE MODAL ═══ -->
+<div id="m-slide" class="modal-ov" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-title" id="slide-modal-title">➕ شريحة جديدة</div>
+    <input type="hidden" id="slide-edit-idx" value="-1">
+
+    <div class="fg">
+      <label class="label">نوع الشريحة</label>
+      <select id="slide-type" class="input" onchange="onSlideTypeChange()">
+        <option value="welcome">🏠 ترحيب</option>
+        <option value="promo">🎉 عرض ترويجي</option>
+        <option value="stats">📊 إحصائيات</option>
+        <option value="image">🖼️ صورة إعلانية</option>
+        <option value="custom">✏️ مخصص</option>
+      </select>
+    </div>
+
+    <div class="fg">
+      <label class="label">العنوان الرئيسي</label>
+      <input id="slide-title" class="input" placeholder="مثال: عروض الموسم">
+    </div>
+
+    <div class="fg" id="slide-desc-wrap">
+      <label class="label">النص التفصيلي</label>
+      <textarea id="slide-desc" class="input" rows="2" placeholder="وصف قصير..."></textarea>
+    </div>
+
+    <div class="fg" id="slide-badge-wrap">
+      <label class="label">نص الشارة (اختياري)</label>
+      <input id="slide-badge" class="input" placeholder="مثال: 🖨️ خدمات الطباعة المتكاملة">
+    </div>
+
+    <div class="fg" id="slide-img-wrap" style="display:none">
+      <label class="label">اختر صورة من المكتبة</label>
+      <select id="slide-img-sel" class="input"></select>
+      <div id="slide-img-preview" style="margin-top:8px;border-radius:10px;overflow:hidden;max-height:120px;"></div>
+    </div>
+
+    <div class="fg">
+      <label class="label">لون الخلفية</label>
+      <div class="color-row" id="color-row">
+        <div class="color-opt sel" data-c="purple" style="background:linear-gradient(135deg,#4c1d95,#7c3aed)" onclick="selColor(this)"></div>
+        <div class="color-opt" data-c="blue" style="background:linear-gradient(135deg,#1e40af,#3b82f6)" onclick="selColor(this)"></div>
+        <div class="color-opt" data-c="green" style="background:linear-gradient(135deg,#14532d,#16a34a)" onclick="selColor(this)"></div>
+        <div class="color-opt" data-c="orange" style="background:linear-gradient(135deg,#92400e,#f59e0b)" onclick="selColor(this)"></div>
+        <div class="color-opt" data-c="pink" style="background:linear-gradient(135deg,#9d174d,#ec4899)" onclick="selColor(this)"></div>
+        <div class="color-opt" data-c="teal" style="background:linear-gradient(135deg,#134e4a,#14b8a6)" onclick="selColor(this)"></div>
+        <div class="color-opt" data-c="dark" style="background:linear-gradient(135deg,#0f172a,#1e293b)" onclick="selColor(this)"></div>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label class="label">مدة العرض (ثانية)</label>
+        <input id="slide-dur" type="number" class="input" value="6" min="3" max="60">
+      </div>
+      <div class="fg" style="display:flex;align-items:flex-end">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding-bottom:4px">
+          <input type="checkbox" id="slide-active" checked style="width:18px;height:18px;accent-color:var(--p)">
+          <span style="font-size:13px;font-weight:700">مفعّلة</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-g" style="flex:1" onclick="saveSlide()">💾 حفظ الشريحة</button>
+      <button class="btn btn-gray" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// SECTION 1 — STATE & CONFIG
+// ═══════════════════════════════════════════
+var CFG_KEY = 'hashayshi_display_config';
+var IMGS_KEY = 'hashayshi_display_images';
+
+var config = {
+  shopName: 'مكتبة حشايشي',
+  welcomeText: 'أهلاً بكم',
+  welcomeSub: 'مكتبتكم المفضلة — جودة بلا تنازل',
+  slideDuration: 6,
+  idleTimeout: 45,
+  slides: [
+    {id:'s1',type:'welcome',title:'أهلاً بكم',desc:'مكتبتكم المفضلة — جودة بلا تنازل',badge:'',color:'purple',dur:8,active:true},
+    {id:'s2',type:'promo',title:'خدمة الطباعة',desc:'طباعة ملونة وأبيض وأسود، تصوير وتجليد',badge:'🖨️ خدمات الطباعة المتكاملة',color:'blue',dur:6,active:true},
+    {id:'s3',type:'stats',title:'إحصائياتنا',desc:'أرقام تتحدث عن نفسها',badge:'',color:'green',dur:6,active:true},
+    {id:'s4',type:'custom',title:'خدمات الاتصالات',desc:'فليكسي موبيليس، جازي، أوريدو — بطاقات الإنترنت',badge:'📱 شحن جميع الشبكات',color:'teal',dur:6,active:true}
+  ],
+  ticker: [
+    'أهلاً وسهلاً بكم في مكتبة حشايشي',
+    'أوسع تشكيلة من اللوازم المدرسية والمكتبية',
+    'خدمات الطباعة متاحة بأحسن الأسعار',
+    'شحن رصيد جميع الشبكات',
+    'نشكركم على ثقتكم بنا دائماً'
+  ]
+};
+
+var images = []; // array of {id, name, data (base64)}
+var selectedColor = 'purple';
+var dragIdx = -1;
+
+var COLORS = {
+  purple: 'radial-gradient(ellipse at center,rgba(124,58,237,0.15) 0%,transparent 70%)',
+  blue:   'radial-gradient(ellipse at center,rgba(59,130,246,0.15) 0%,transparent 70%)',
+  green:  'radial-gradient(ellipse at center,rgba(16,185,129,0.15) 0%,transparent 70%)',
+  orange: 'radial-gradient(ellipse at center,rgba(245,158,11,0.15) 0%,transparent 70%)',
+  pink:   'radial-gradient(ellipse at center,rgba(236,72,153,0.15) 0%,transparent 70%)',
+  teal:   'radial-gradient(ellipse at center,rgba(20,184,166,0.15) 0%,transparent 70%)',
+  dark:   'radial-gradient(ellipse at center,rgba(30,41,59,0.8) 0%,transparent 70%)'
+};
+
+// ═══════════════════════════════════════════
+// SECTION 2 — LOAD & SAVE
+// ═══════════════════════════════════════════
+function loadConfig(){
+  var raw = localStorage.getItem(CFG_KEY);
+  if(raw){try{Object.assign(config, JSON.parse(raw));}catch(e){}}
+  var imgs = localStorage.getItem(IMGS_KEY);
+  if(imgs){try{images = JSON.parse(imgs);}catch(e){}}
+}
+
+function saveConfig(){
+  localStorage.setItem(CFG_KEY, JSON.stringify(config));
+  localStorage.setItem(IMGS_KEY, JSON.stringify(images));
+}
+
+// Push full config to display screen
+function pushNowToDisplay(){
+  localStorage.setItem('hashayshi_display_full_config', JSON.stringify({
+    shopName: config.shopName,
+    welcomeText: config.welcomeText,
+    welcomeSub: config.welcomeSub,
+    slideDuration: config.slideDuration * 1000,
+    idleTimeout: config.idleTimeout * 1000,
+    slides: config.slides.filter(function(s){return s.active;}),
+    ticker: config.ticker,
+    images: images,
+    ts: Date.now()
+  }));
+  toast('تم الإرسال للشاشة ✅', 'ok');
+  updateStatus();
+}
+
+function saveAndPush(){
+  // Read settings form
+  config.shopName = document.getElementById('set-shopname').value || 'مكتبة حشايشي';
+  config.welcomeText = document.getElementById('set-welcome').value || 'أهلاً بكم';
+  config.welcomeSub = document.getElementById('set-sub').value || '';
+  config.slideDuration = parseInt(document.getElementById('set-dur').value) || 6;
+  config.idleTimeout = parseInt(document.getElementById('set-idle').value) || 45;
+  saveConfig();
+  pushNowToDisplay();
+  updatePreview();
+}
+
+function clearDisplayCart(){
+  localStorage.setItem('hashayshi_display_cart', JSON.stringify({active:false,items:[],total:0}));
+  toast('تم مسح السلة من الشاشة ✅', 'ok');
+}
+
+function openDisplayInNewTab(){
+  toast('افتح ملف شاشة الزبون في تاب جديد بنفس المتصفح 💡', 'ok', 3000);
+}
+
+function exportConfig(){
+  var data = {config: config, images: images};
+  var blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'display_config.json';
+  a.click();
+  toast('تم التصدير ✅', 'ok');
+}
+
+function importConfig(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var r = new FileReader();
+  r.onload = function(ev){
+    try{
+      var d = JSON.parse(ev.target.result);
+      if(d.config) Object.assign(config, d.config);
+      if(d.images) images = d.images;
+      saveConfig();
+      renderAll();
+      toast('تم الاستيراد ✅', 'ok');
+    }catch(e){ toast('ملف غير صالح ❌','err'); }
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+// ═══════════════════════════════════════════
+// SECTION 3 — SLIDES RENDER & MANAGE
+// ═══════════════════════════════════════════
+var TYPE_LABELS = {welcome:'ترحيب',promo:'عرض',stats:'إحصائيات',image:'صورة',custom:'مخصص'};
+var TYPE_CLASSES = {welcome:'sb-welcome',promo:'sb-promo',stats:'sb-stats',image:'sb-image',custom:'sb-custom'};
+var TYPE_ICONS = {welcome:'🏠',promo:'🎉',stats:'📊',image:'🖼️',custom:'✏️'};
+
+function renderSlides(){
+  var el = document.getElementById('slides-list');
+  if(!config.slides.length){
+    el.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">لا توجد شرائح — أضف شريحة جديدة</div>';
+    return;
+  }
+  el.innerHTML = config.slides.map(function(s,i){
+    var thumb = s.type==='image' && s.imageId ? getImageById(s.imageId) : null;
+    var thumbHtml = thumb
+      ? '<div class="slide-thumb"><img src="'+thumb.data+'" alt=""></div>'
+      : '<div class="slide-thumb" style="font-size:24px">'+TYPE_ICONS[s.type]+'</div>';
+    return '<div class="slide-item'+(s.active?'':' disabled')+'" draggable="true" data-idx="'+i+'" ondragstart="dragStart(event,'+i+')" ondragover="dragOver(event,'+i+')" ondrop="dropSlide(event,'+i+')">'+
+      '<span class="slide-drag">⠿</span>'+
+      thumbHtml+
+      '<div class="slide-info">'+
+        '<span class="slide-type-badge '+TYPE_CLASSES[s.type]+'">'+TYPE_LABELS[s.type]+'</span>'+
+        '<div class="slide-title-text">'+s.title+'</div>'+
+        '<div class="slide-dur">⏱️ '+s.dur+' ث</div>'+
+      '</div>'+
+      '<div class="slide-actions">'+
+        '<button class="ic-btn ic-toggle'+(s.active?'':' off')+'" onclick="toggleSlide('+i+')" title="تفعيل/تعطيل">'+(s.active?'✅':'⭕')+'</button>'+
+        '<button class="ic-btn ic-edit" onclick="openEditSlide('+i+')" title="تعديل">✏️</button>'+
+        '<button class="ic-btn ic-del" onclick="delSlide('+i+')" title="حذف">🗑️</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('st-slides').textContent = config.slides.length;
+}
+
+function toggleSlide(idx){
+  config.slides[idx].active = !config.slides[idx].active;
+  saveConfig();
+  renderSlides();
+}
+
+function delSlide(idx){
+  if(!confirm('حذف هذه الشريحة؟')) return;
+  config.slides.splice(idx,1);
+  saveConfig();
+  renderSlides();
+  toast('تم الحذف ✅','ok');
+}
+
+// Drag & Drop reorder
+function dragStart(e,idx){ dragIdx=idx; e.dataTransfer.effectAllowed='move'; }
+function dragOver(e,idx){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+function dropSlide(e,idx){
+  e.preventDefault();
+  if(dragIdx<0||dragIdx===idx)return;
+  var moved = config.slides.splice(dragIdx,1)[0];
+  config.slides.splice(idx,0,moved);
+  dragIdx=-1;
+  saveConfig();
+  renderSlides();
+}
+
+// ═══════════════════════════════════════════
+// SECTION 4 — SLIDE MODAL
+// ═══════════════════════════════════════════
+function openAddSlide(){
+  document.getElementById('slide-modal-title').textContent = '➕ شريحة جديدة';
+  document.getElementById('slide-edit-idx').value = '-1';
+  document.getElementById('slide-type').value = 'welcome';
+  document.getElementById('slide-title').value = '';
+  document.getElementById('slide-desc').value = '';
+  document.getElementById('slide-badge').value = '';
+  document.getElementById('slide-dur').value = '6';
+  document.getElementById('slide-active').checked = true;
+  selectedColor = 'purple';
+  document.querySelectorAll('.color-opt').forEach(function(el){el.classList.remove('sel');});
+  document.querySelector('[data-c="purple"]').classList.add('sel');
+  onSlideTypeChange();
+  document.getElementById('m-slide').classList.add('show');
+}
+
+function openEditSlide(idx){
+  var s = config.slides[idx];
+  document.getElementById('slide-modal-title').textContent = '✏️ تعديل الشريحة';
+  document.getElementById('slide-edit-idx').value = idx;
+  document.getElementById('slide-type').value = s.type;
+  document.getElementById('slide-title').value = s.title;
+  document.getElementById('slide-desc').value = s.desc||'';
+  document.getElementById('slide-badge').value = s.badge||'';
+  document.getElementById('slide-dur').value = s.dur||6;
+  document.getElementById('slide-active').checked = s.active!==false;
+  selectedColor = s.color||'purple';
+  document.querySelectorAll('.color-opt').forEach(function(el){
+    el.classList.toggle('sel', el.getAttribute('data-c')===selectedColor);
+  });
+  onSlideTypeChange();
+  if(s.imageId) document.getElementById('slide-img-sel').value = s.imageId;
+  document.getElementById('m-slide').classList.add('show');
+}
+
+function saveSlide(){
+  var idx = parseInt(document.getElementById('slide-edit-idx').value);
+  var type = document.getElementById('slide-type').value;
+  var imgId = type==='image' ? document.getElementById('slide-img-sel').value : null;
+  var slide = {
+    id: idx>=0 ? config.slides[idx].id : 's'+Date.now(),
+    type: type,
+    title: document.getElementById('slide-title').value || 'شريحة جديدة',
+    desc: document.getElementById('slide-desc').value,
+    badge: document.getElementById('slide-badge').value,
+    color: selectedColor,
+    dur: parseInt(document.getElementById('slide-dur').value)||6,
+    active: document.getElementById('slide-active').checked,
+    imageId: imgId
+  };
+  if(idx>=0) config.slides[idx]=slide;
+  else config.slides.push(slide);
+  saveConfig();
+  renderSlides();
+  closeModal();
+  toast((idx>=0?'تم التعديل':'تمت الإضافة')+' ✅','ok');
+}
+
+function closeModal(){
+  document.getElementById('m-slide').classList.remove('show');
+}
+
+function onSlideTypeChange(){
+  var t = document.getElementById('slide-type').value;
+  var isImg = t==='image';
+  document.getElementById('slide-img-wrap').style.display = isImg?'block':'none';
+  document.getElementById('slide-badge-wrap').style.display = (t==='promo'||t==='custom')?'block':'none';
+  // Refresh image selector
+  if(isImg){
+    var sel = document.getElementById('slide-img-sel');
+    sel.innerHTML = images.length
+      ? images.map(function(img){return '<option value="'+img.id+'">'+img.name+'</option>';}).join('')
+      : '<option value="">لا توجد صور — ارفع صورة أولاً</option>';
+    onImgSelChange();
+  }
+}
+
+function onImgSelChange(){
+  var sel = document.getElementById('slide-img-sel');
+  var id = sel.value;
+  var prev = document.getElementById('slide-img-preview');
+  var img = getImageById(id);
+  prev.innerHTML = img ? '<img src="'+img.data+'" style="width:100%;border-radius:8px;max-height:120px;object-fit:cover">' : '';
+}
+
+function selColor(el){
+  document.querySelectorAll('.color-opt').forEach(function(e){e.classList.remove('sel');});
+  el.classList.add('sel');
+  selectedColor = el.getAttribute('data-c');
+}
+
+// ═══════════════════════════════════════════
+// SECTION 5 — IMAGE MANAGER
+// ═══════════════════════════════════════════
+function onImgSelect(e){
+  var files = Array.from(e.target.files);
+  processFiles(files);
+  e.target.value='';
+}
+
+function onDragOver(e){ e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+function onDragLeave(e){ document.getElementById('upload-zone').classList.remove('drag-over'); }
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  processFiles(Array.from(e.dataTransfer.files));
+}
+
+function processFiles(files){
+  var toLoad = files.filter(function(f){return f.type.startsWith('image/');});
+  if(!toLoad.length){ toast('اختر صور صالحة فقط ❌','err'); return; }
+  var loaded=0;
+  toLoad.forEach(function(file){
+    if(file.size > 2*1024*1024){ toast('الصورة '+file.name+' تجاوزت 2MB ❌','err'); return; }
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      images.push({id:'img'+Date.now()+Math.random().toString(36).slice(2,5), name:file.name, data:ev.target.result});
+      loaded++;
+      if(loaded===toLoad.length){ saveConfig(); renderImages(); toast('تم رفع '+loaded+' صورة ✅','ok'); }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderImages(){
+  var grid = document.getElementById('img-grid');
+  grid.innerHTML = images.map(function(img,i){
+    return '<div class="img-thumb-wrap">'+
+      '<img src="'+img.data+'" alt="'+img.name+'">'+
+      '<button class="img-thumb-del" onclick="delImage('+i+')" title="حذف">✕</button>'+
+    '</div>';
+  }).join('');
+  document.getElementById('st-imgs').textContent = images.length;
+}
+
+function delImage(idx){
+  if(!confirm('حذف هذه الصورة؟')) return;
+  var id = images[idx].id;
+  images.splice(idx,1);
+  // Remove from slides using this image
+  config.slides.forEach(function(s){if(s.imageId===id)s.imageId=null;});
+  saveConfig();
+  renderImages();
+  toast('تم الحذف ✅','ok');
+}
+
+function getImageById(id){
+  return images.find(function(img){return img.id===id;}) || null;
+}
+
+// ═══════════════════════════════════════════
+// SECTION 6 — TICKER MANAGER
+// ═══════════════════════════════════════════
+function renderTicker(){
+  var el = document.getElementById('ticker-list');
+  el.innerHTML = config.ticker.map(function(t,i){
+    return '<div class="ticker-item">'+
+      '<span class="ticker-text">'+t+'</span>'+
+      '<button class="ticker-del" onclick="delTicker('+i+')" title="حذف">✕</button>'+
+    '</div>';
+  }).join('') || '<div style="color:var(--muted);font-size:12px;padding:8px">لا توجد رسائل</div>';
+  document.getElementById('st-ticker').textContent = config.ticker.length;
+  // Update preview ticker
+  document.getElementById('preview-ticker').textContent = '📢 أخبارنا ✦ ' + config.ticker.join(' ✦ ');
+}
+
+function addTicker(){
+  var val = document.getElementById('new-ticker').value.trim();
+  if(!val){ toast('أدخل نص الرسالة ❌','err'); return; }
+  config.ticker.push(val);
+  document.getElementById('new-ticker').value='';
+  saveConfig();
+  renderTicker();
+  toast('تمت الإضافة ✅','ok');
+}
+
+function delTicker(idx){
+  config.ticker.splice(idx,1);
+  saveConfig();
+  renderTicker();
+}
+
+// ═══════════════════════════════════════════
+// SECTION 7 — PREVIEW & STATUS
+// ═══════════════════════════════════════════
+function updatePreview(){
+  document.getElementById('prev-shopname').textContent = '📚 ' + config.shopName;
+  document.getElementById('prev-welcome').textContent = config.welcomeText;
+  document.getElementById('prev-sub').textContent = config.welcomeSub;
+  renderTicker();
+  // Update clock
+  var now = new Date();
+  document.getElementById('prev-clock').textContent = 
+    now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+}
+
+function previewSlide(){
+  var active = config.slides.filter(function(s){return s.active;});
+  if(!active.length){ toast('لا توجد شرائح مفعّلة ❌','err'); return; }
+  var i = 0;
+  var screen = document.getElementById('preview-screen');
+  function show(){
+    var s = active[i % active.length];
+    var bg = COLORS[s.color]||COLORS.purple;
+    screen.style.background = '#0a0a1a';
+    var imgEl = '';
+    if(s.type==='image' && s.imageId){
+      var img = getImageById(s.imageId);
+      if(img) imgEl = '<img src="'+img.data+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.7">';
+    }
+    screen.innerHTML = imgEl + '<div style="position:absolute;inset:0;background:'+bg+'"></div>'+
+      '<div class="preview-content" style="position:relative;z-index:1">'+
+        '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px">'+s.title+'</div>'+
+        (s.desc?'<div style="font-size:10px;color:rgba(255,255,255,.6)">'+s.desc+'</div>':'')+
+        (s.badge?'<div style="margin-top:8px;background:rgba(124,58,237,.4);color:#fff;padding:4px 14px;border-radius:20px;font-size:10px;font-weight:700">'+s.badge+'</div>':'')+
+      '</div>';
+    i++;
+  }
+  show();
+  var interval = setInterval(function(){
+    if(!document.getElementById('m-slide').classList.contains('show')) show();
+    else clearInterval(interval);
+  }, 2500);
+  toast('بدأت المعاينة — تتغير كل 2.5 ث','ok',3000);
+}
+
+function updateStatus(){
+  var cartRaw = localStorage.getItem('hashayshi_display_cart');
+  var cfgRaw = localStorage.getItem('hashayshi_display_full_config');
+  var cart = null;
+  try{ if(cartRaw) cart = JSON.parse(cartRaw); }catch(e){}
+  var cfgTs = null;
+  try{ if(cfgRaw){ var c=JSON.parse(cfgRaw); cfgTs=c.ts; } }catch(e){}
+  
+  var html = '';
+  html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>📡 آخر إرسال:</span><strong>'+(cfgTs?new Date(cfgTs).toLocaleTimeString('ar-DZ'):'لم يتم')+'</strong></div>';
+  html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>🛒 السلة:</span><strong style="color:'+(cart&&cart.active?'#16a34a':'#9ca3af')+'">'+(cart&&cart.active?'نشطة ('+cart.items.length+' أصناف)':'فارغة')+'</strong></div>';
+  html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>🎞️ الشرائح:</span><strong>'+config.slides.filter(function(s){return s.active;}).length+' / '+config.slides.length+' مفعّلة</strong></div>';
+  html += '<div style="display:flex;justify-content:space-between;padding:6px 0"><span>🖼️ الصور:</span><strong>'+images.length+' صورة</strong></div>';
+  document.getElementById('display-status').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// SECTION 8 — SETTINGS FORM SYNC
+// ═══════════════════════════════════════════
+function loadSettingsForm(){
+  document.getElementById('set-shopname').value = config.shopName;
+  document.getElementById('set-welcome').value = config.welcomeText;
+  document.getElementById('set-sub').value = config.welcomeSub;
+  document.getElementById('set-dur').value = config.slideDuration;
+  document.getElementById('set-idle').value = config.idleTimeout;
+}
+
+// ═══════════════════════════════════════════
+// SECTION 9 — TOAST & UTILS
+// ═══════════════════════════════════════════
+function toast(msg, type, dur){
+  var t = document.getElementById('toast');
+  t.className = 'toast show ' + (type||'');
+  t.textContent = msg;
+  setTimeout(function(){t.className='toast';}, dur||2500);
+}
+
+function renderAll(){
+  renderSlides();
+  renderImages();
+  renderTicker();
+  loadSettingsForm();
+  updatePreview();
+  updateStatus();
+}
+
+// ═══════════════════════════════════════════
+// SECTION 10 — INIT
+// ═══════════════════════════════════════════
+window.onload = function(){
+  loadConfig();
+  renderAll();
+  setInterval(updatePreview, 30000);
+  setInterval(updateStatus, 3000);
+  // Listen for slide-img-sel changes
+  var imgSel = document.getElementById('slide-img-sel');
+  imgSel.addEventListener('change', onImgSelChange);
+};
+</script>
+</body>
+</html>
