@@ -289,4 +289,4 @@ function checkCreditLimitAlerts(){
 }
 
 window.onload = init;
-</script>
+
