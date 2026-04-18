@@ -39,4 +39,4 @@ setInterval(function(){
   updateNavBadges();
 },5000);
 
-</script>
+
